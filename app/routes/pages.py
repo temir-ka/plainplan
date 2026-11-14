@@ -10,11 +10,14 @@ from sqlmodel import Session, delete, func, select
 
 from app import config
 from app.db import get_session
+from app.glass import stained_glass
 from app.models import Chunk, Field, Household, Member, Policy, PolicyMember
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["ICONS"] = {"health": "🩺", "dental": "🦷", "auto": "🚗", "home": "🏠"}
+templates.env.globals["TYPE_LABEL"] = {"health": "Health", "dental": "Dental", "auto": "Auto", "home": "Home"}
+templates.env.globals["stained"] = stained_glass  # decorative stained-glass SVG background (design)
 
 SessionDep = Annotated[Session, Depends(get_session)]
 ROLES = ("parent", "child")
@@ -64,6 +67,14 @@ def _verified_counts(session: Session, policies: list[Policy]) -> dict[int, int]
     return dict(rows.all())
 
 
+def _field_totals(session: Session, policies: list[Policy]) -> dict[int, int]:
+    ids = [p.id for p in policies]
+    if not ids:
+        return {}
+    rows = session.exec(select(Field.policy_id, func.count()).where(Field.policy_id.in_(ids)).group_by(Field.policy_id))
+    return dict(rows.all())
+
+
 def _own_member(session: Session, hh_id: str, member_id: int) -> Member:
     member = session.get(Member, member_id)
     if not member or member.household_id != hh_id:
@@ -76,14 +87,27 @@ def home(request: Request, session: SessionDep):
     hh = request.state.household
     policies = _policies(session, hh.id)
     cov = covers(session, hh.id)
-    tiles = [
-        {"title": m.nickname, "subtitle": m.role.capitalize(), "href": f"/member/{m.id}",
-         "types": [p.type for p in policies if m.id in cov.get(p.id, set())]}
-        for m in _members(session, hh.id)
-    ]
-    tiles.append({"title": "Shared", "subtitle": "House, car, anything joint", "href": "/shared",
-                  "types": [p.type for p in policies if not cov.get(p.id)]})
-    return render(request, "home.html", tiles=tiles, has_members=len(tiles) > 1)
+    members = _members(session, hh.id)
+    types_of = {m.id: [p.type for p in policies if m.id in cov.get(p.id, set())] for m in members}
+    shared_types = [p.type for p in policies if not cov.get(p.id)]
+    ava = next((m for m in members if m.nickname.lower() == "ava"), None)
+    return render(request, "home.html", members=members, types_of=types_of, shared_types=shared_types,
+                  example=_how_it_works_example(session, policies), ava=ava)
+
+
+def _how_it_works_example(session: Session, policies: list[Policy]) -> dict | None:
+    """Real numbers for the "How it works" cards, taken from this family's own data (never made up)."""
+    dental = [p for p in policies if p.type == "dental"]
+    for p in dental + [p for p in policies if p.type != "dental"]:
+        fields = list(session.exec(select(Field).where(Field.policy_id == p.id)))
+        verified = [f for f in fields if f.verified]
+        if not verified:
+            continue
+        shown = next((f for f in verified if f.name == "orthodontia"), verified[0])
+        chunk = session.get(Chunk, shown.chunk_id)
+        return {"policy": p, "total": len(fields), "verified": len(verified),
+                "missing": len(fields) - len(verified), "quote": shown.quote, "page": chunk.page if chunk else "?"}
+    return None
 
 
 def _policies_page(request: Request, session: SessionDep, member: Member | None) -> HTMLResponse:
@@ -99,8 +123,10 @@ def _policies_page(request: Request, session: SessionDep, member: Member | None)
         subtitle=member.role.capitalize() if member else "House, car, anything jointly owned",
         ask_label=f"Ask about {member.nickname}'s policies" if member else "Ask about shared policies",
         ask_scope=f"member:{member.id}" if member else "shared",
+        member=member,
         policies=policies,
         verified=_verified_counts(session, policies),
+        totals=_field_totals(session, policies),
         members=_members(session, hh.id),
         preselected=member.id if member else None,
         policy_types=POLICY_TYPES,

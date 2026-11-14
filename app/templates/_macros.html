@@ -1,0 +1,90 @@
+{# ---------- icons ---------- #}
+{% macro icon(name, size=20, sw=2) -%}
+{%- set P = {
+ 'health': 'M9 3h6v6h6v6h-6v6H9v-6H3V9h6z',
+ 'dental': 'M8 3c-2 0-4 2-4 5 0 3 1 4 1.5 7 .4 2.5 1.2 6 2.5 6 1.5 0 1-4 4-4s2.5 4 4 4c1.3 0 2.1-3.5 2.5-6C19 12 20 11 20 8c0-3-2-5-4-5-1.6 0-2.3 1-4 1S9.6 3 8 3z',
+ 'auto': 'M3 15l1.8-5A2 2 0 0 1 6.7 8.700h10.6a2 2 0 0 1 1.9 1.300L21 15v4h-3v-2H6v2H3z',
+ 'home': 'M3 11l9-8 9 8M5 10v10h14V10M10 20v-5h4v5',
+ 'shield': 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z',
+ 'alert': 'M12 3l10 18H2zM12 10v5M12 18h.01',
+ 'check': 'M5 12.5l4.5 4.5L19 7',
+ 'x': 'M6 6l12 12M18 6L6 18',
+ 'q': 'M9 9a3 3 0 1 1 4.5 2.6c-1 .6-1.5 1.2-1.5 2.4M12 18h.01',
+ 'phone': 'M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z',
+ 'cal': 'M4 7h16v13H4zM4 11h16M8 3v4M16 3v4',
+ 'plus': 'M12 5v14M5 12h14',
+ 'arrow': 'M5 12h14M13 6l6 6-6 6',
+ 'back': 'M19 12H5M11 6l-6 6 6 6',
+ 'doc': 'M6 3h9l4 4v14H6zM14 3v5h5',
+ 'upload': 'M12 16V4M7 9l5-5 5 5M5 20h14',
+ 'chev': 'M9 6l6 6-6 6',
+ 'lock': 'M6 11h12v9H6zM9 11V8a3 3 0 0 1 6 0v3'
+} -%}
+<svg class="ic" width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{ sw }}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{ P[name] }}"/></svg>
+{%- endmacro %}
+
+{# ---------- 3D robot (blinks, floats). dim = "couldn't find it" state ---------- #}
+{% macro bot(size=96, dim=False, cls='') -%}
+<svg class="bot {{ 'bot--dim' if dim }} {{ cls }}" width="{{ size }}" height="{{ size }}" viewBox="0 0 120 120" aria-hidden="true">
+ <ellipse class="bot__shadow" cx="60" cy="110" rx="30" ry="5.5" fill="#000" opacity=".4"/>
+ <g class="bot__body">
+  <rect x="57" y="11" width="6" height="16" rx="3" fill="url(#gHeadDark)"/>
+  <circle class="bot__bulb" cx="60" cy="9" r="6.5" fill="url(#gEye)" filter="url(#fGlow)"/>
+  <rect x="4" y="52" width="16" height="30" rx="8" fill="url(#gHeadDark)"/>
+  <rect x="100" y="52" width="16" height="30" rx="8" fill="url(#gHeadDark)"/>
+  <rect x="14" y="24" width="92" height="82" rx="30" fill="url(#gHead)"/>
+  <rect x="14.75" y="24.75" width="90.5" height="80.5" rx="29.500" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="1.5"/>
+  <path d="M30 40c10-9 34-11 58-4-18 2-42 6-58 4z" fill="rgba(255,255,255,.35)"/>
+  <rect x="26" y="44" width="68" height="44" rx="20" fill="url(#gFace)"/>
+  <rect x="26.5" y="44.5" width="67" height="43" rx="19.500" fill="none" stroke="rgba(255,255,255,.18)"/>
+  <g class="eyes">
+   <rect x="40" y="55" width="11" height="17" rx="5.5" fill="url(#gEye)" filter="url(#fGlow)"/>
+   <rect x="69" y="55" width="11" height="17" rx="5.5" fill="url(#gEye)" filter="url(#fGlow)"/>
+  </g>
+  <path d="M52 77q8 6 16 0" fill="none" stroke="#7DF3DE" stroke-width="2.6" stroke-linecap="round"/>
+  <circle cx="34" cy="77" r="4" fill="#FF8FD0" opacity=".45"/><circle cx="86" cy="77" r="4" fill="#FF8FD0" opacity=".45"/>
+ </g>
+</svg>
+{%- endmacro %}
+
+{# ---------- status pill ---------- #}
+{% macro status(s) -%}
+{%- if s == 'covered' -%}<span class="status status--ok">{{ icon('check', 16, 3) }}Covered</span>
+{%- elif s == 'not_covered' -%}<span class="status status--bad">{{ icon('x', 16, 3) }}Not covered</span>
+{%- else -%}<span class="status status--warn">{{ icon('q', 16, 3) }}Not clear from your documents</span>{%- endif -%}
+{%- endmacro %}
+
+{# ---------- verified quote ---------- #}
+{% macro quote(text, insurer, page) -%}
+<blockquote class="quote">{{ icon('doc', 18) }}<span><i>“{{ text }}”</i><small>{{ insurer }} · p. {{ page }}</small></span></blockquote>
+{%- endmacro %}
+
+{# ---------- call button: label and number wrap instead of overflowing ---------- #}
+{% macro call(label, phone, light=False) -%}
+<a class="btn btn--call {{ 'btn--light' if light else 'btn--dark' }}" href="tel:{{ phone|replace('-','')|replace(' ','')|replace('(','')|replace(')','') }}">{{ icon('phone', 18) }}<span class="btn__txt"><span>{{ label }}</span><b>{{ phone }}</b></span></a>
+{%- endmacro %}
+
+{# tone cycles by member id so a person keeps their colour everywhere #}
+{% macro avatar(m, size='md') -%}
+<span class="avatar avatar--{{ ['violet', 'teal', 'pink', 'amber'][m.id % 4] }} avatar--{{ size }}">{{ m.nickname[:1]|upper }}</span>
+{%- endmacro %}
+
+{% macro tone(m) -%}{{ ['violet', 'teal', 'pink', 'amber'][m.id % 4] }}{%- endmacro %}
+
+{# ---------- ask box (scope = household | member:{id} | shared | policy:{id}), HTMX ---------- #}
+{% macro ask_box(id, title, scope, placeholder='', chips=[], note='') -%}
+<section class="ask glass reveal" id="{{ id }}">
+  <form hx-post="/ask" hx-target="#{{ id }}-answer" hx-indicator="#{{ id }}-wait" hx-disabled-elt="find button[type=submit]">
+    <input type="hidden" name="scope" value="{{ scope }}">
+    <label class="ask__label hd" for="{{ id }}-q">{{ bot(34) }}<span>{{ title }}</span></label>
+    <div class="ask__row">
+      <input id="{{ id }}-q" class="input" name="q" type="text" autocomplete="off" maxlength="300" placeholder="{{ placeholder }}" required>
+      <button class="btn btn--dark" type="submit">Ask</button>
+    </div>
+    {% if chips %}<div class="chips">{% for c in chips %}<button type="button" class="chip" data-fill="#{{ id }}-q" data-text="{{ c }}" data-submit>{{ c }}</button>{% endfor %}</div>{% endif %}
+    {% if note %}<p class="muted small">{{ note }}</p>{% endif %}
+  </form>
+  <p id="{{ id }}-wait" class="htmx-indicator loading">{{ bot(28) }}Reading your documents…</p>
+  <div id="{{ id }}-answer" class="answer-slot" aria-live="polite"></div>
+</section>
+{%- endmacro %}

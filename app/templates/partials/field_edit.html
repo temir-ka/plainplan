@@ -1,13 +1,12 @@
 {# needs: f #}
-<form id="field-{{ f.id }}" hx-post="/fields/{{ f.id }}" hx-target="this" hx-swap="outerHTML"
-      class="text-sm border-t border-slate-100 pt-2 space-y-1">
-  <label class="text-slate-600">{{ f.name.replace("_", " ").capitalize() }}</label>
-  <div class="flex gap-2">
-    <input name="value" value="{{ f.value }}" maxlength="120" autofocus
-           class="flex-1 min-w-0 rounded-lg border border-slate-300 px-2 py-1">
-    <button class="rounded-lg bg-slate-900 text-white px-3 py-1 text-xs">Save</button>
-    <button type="button" hx-get="/fields/{{ f.id }}" hx-target="#field-{{ f.id }}" hx-swap="outerHTML"
-            class="text-xs underline">Cancel</button>
+<form id="field-{{ f.id }}" hx-post="/fields/{{ f.id }}" hx-target="this" hx-swap="outerHTML" class="fact glass">
+  <label class="field" for="fv-{{ f.id }}"><span>{{ f.name.replace("_", " ").capitalize() }}</span></label>
+  <div class="ask__row">
+    <input id="fv-{{ f.id }}" class="input" name="value" value="{{ f.value }}" maxlength="120" autofocus>
+    <button class="btn btn--dark" type="submit">Save</button>
   </div>
-  <p class="text-xs text-slate-500">Your value replaces the document quote and is marked "Entered by you".</p>
+  <div class="between">
+    <p class="muted small">Your value replaces the document quote and is marked “Entered by you”.</p>
+    <button class="linkbtn" type="button" hx-get="/fields/{{ f.id }}" hx-target="#field-{{ f.id }}" hx-swap="outerHTML">Cancel</button>
+  </div>
 </form>

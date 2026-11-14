@@ -1,37 +1,89 @@
+{% from "_macros.html" import icon, bot %}
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Plainplan{% endblock %}</title>
-  <link rel="manifest" href="/static/manifest.json">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}Plainplan: your family's policies, in plain words{% endblock %}</title>
+<meta name="description" content="Plainplan reads your family's insurance policies and answers with a quote from your own documents.">
+<meta name="theme-color" content="#0B0618">
+<link rel="manifest" href="/static/manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/css/app.css">
+<script src="https://unpkg.com/htmx.org@2.0.4"></script>
 </head>
-<body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
-  <header class="bg-white border-b border-slate-200">
-    <div class="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
-      <a href="/" class="font-bold text-lg tracking-tight">Plainplan</a>
-      <div class="flex items-center gap-2 text-sm min-w-0">
-        <a href="/family" class="font-medium truncate">{{ household.name }}</a>
-        {% if household.is_demo %}
-          <span class="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs">Demo</span>
-          <a href="/start" class="rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs whitespace-nowrap">Start my own family</a>
-        {% endif %}
-      </div>
-    </div>
-  </header>
+<body class="{% block body_class %}{% endblock %}">
+{# shared SVG gradients/filters used by the robot and scene #}
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+ <linearGradient id="gHead" x1="0.1" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#C4B0FF"/><stop offset=".45" stop-color="#7C4DFF"/><stop offset="1" stop-color="#3B1D9E"/></linearGradient>
+ <linearGradient id="gHeadDark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8E6BFF"/><stop offset="1" stop-color="#2E1580"/></linearGradient>
+ <linearGradient id="gFace" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2B1766"/><stop offset="1" stop-color="#0E0726"/></linearGradient>
+ <linearGradient id="gEye" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1FFFB"/><stop offset="1" stop-color="#4FEFD2"/></linearGradient>
+ <filter id="fGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+ <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E88BD6" stop-opacity=".55"/><stop offset=".55" stop-color="#7C4DFF" stop-opacity=".35"/><stop offset="1" stop-color="#0B0618" stop-opacity="0"/></linearGradient>
+ <linearGradient id="gMtn1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8E6BFF" stop-opacity=".55"/><stop offset="1" stop-color="#2A1470" stop-opacity=".9"/></linearGradient>
+ <linearGradient id="gMtn2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5B34C9" stop-opacity=".8"/><stop offset="1" stop-color="#170A3F"/></linearGradient>
+ <linearGradient id="gShield" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".30"/><stop offset="1" stop-color="#B08CFF" stop-opacity=".08"/></linearGradient>
+</defs></svg>
 
-  <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-6 space-y-6">
-    {% block content %}{% endblock %}
-  </main>
+<div class="bg" aria-hidden="true">
+  <div class="bg__blob bg__blob--1"></div><div class="bg__blob bg__blob--2"></div><div class="bg__blob bg__blob--3"></div>
+  <div class="bg__glass" data-depth="0.08" data-lag="0.04">{{ stained(1600, 1000, 9, 6, 11, 0.32, 0.12)|safe }}</div>
+</div>
 
-  <footer class="border-t border-slate-200 bg-white">
-    <div class="max-w-2xl mx-auto px-4 py-4 text-xs text-slate-500 space-y-2">
-      <p>Plainplan explains your own policy documents. It is not insurance, legal, or medical advice and does not
-        sell insurance. Your insurer makes the final decision on any claim.</p>
-      <a href="/settings" class="underline">Delete my family data</a>
+<header class="topbar">
+  <div class="container topbar__in">
+    <a class="brand" href="/" aria-label="Plainplan home">{{ bot(40) }}<span class="hd">Plainplan</span></a>
+    <nav class="nav" aria-label="Main">
+      <a href="/">Family</a>
+      <a href="/#how">How it works</a>
+      <a href="/#judges">For judges</a>
+    </nav>
+    <div class="topbar__right">
+      <a class="household" href="/family" title="Your household">{{ household.name }}{% if household.is_demo %}<span class="badge">DEMO</span>{% endif %}</a>
+      <a class="btn btn--primary btn--sos" href="/situation">{{ icon('shield', 20) }}<span>Something happened?</span></a>
     </div>
-  </footer>
+  </div>
+</header>
+
+{% if household.is_demo %}
+<div class="container"><div class="demo-strip glass">
+  <span>Demo family: names, dates and premiums are made up. Policy texts are public sample documents; the auto policy is a fictional sample.</span>
+  <a class="btn btn--ghost btn--sm" href="/start">Start my own family</a>
+</div></div>
+{% endif %}
+
+<div class="sos-bar"><a class="btn btn--primary btn--block" href="/situation">{{ icon('shield', 22) }}<span>Something happened?</span></a></div>
+
+<main id="page">
+{% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  <div class="container footer__in">
+    <p>Plainplan explains your own policy documents. It is not insurance, legal, or medical advice and does not
+      sell insurance. Your insurer makes the final decision on any claim.</p>
+    <button class="linkbtn" type="button" data-open="dlg-delete">Delete my family data</button>
+  </div>
+</footer>
+
+<dialog id="dlg-delete" class="dlg dlg--sm" aria-labelledby="del-title">
+  <button class="dlg__x" type="button" data-close aria-label="Close">{{ icon('x', 20) }}</button>
+  <h2 class="hd" id="del-title">Delete your family data?</h2>
+  <p class="muted">This removes members, policy text and questions for this browser. It cannot be undone.</p>
+  <form action="/delete-data" method="post" class="row">
+    <button class="btn btn--danger" type="submit">Delete everything</button>
+    <button class="btn btn--ghost" type="button" data-close>Keep my data</button>
+  </form>
+</dialog>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="/static/js/app.js" defer></script>
+<script>
+  // HTMX swaps in new HTML: let the design's scroll-reveal pick up the new blocks.
+  document.addEventListener('htmx:afterSwap', function (e) { if (window.PP) window.PP.observe(e.detail.target); });
+  document.addEventListener('htmx:responseError', function () { if (window.PP) window.PP.toast('Something went wrong. Please try again.'); });
+</script>
 </body>
 </html>

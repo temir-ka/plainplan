@@ -1,43 +1,122 @@
 {% extends "base.html" %}
+{% from "_macros.html" import icon, bot, avatar, tone, ask_box %}
+{% block body_class %}page-home{% endblock %}
 {% block content %}
-  {% if household.is_demo %}
-    <p class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-900">
-      <b>Demo family.</b> Names, dates and premiums are made up. Policy texts are public sample documents;
-      the auto policy is a fictional sample. <a href="/start" class="underline">Start my own family</a>
-    </p>
-  {% endif %}
-  <a href="/situation"
-     class="block w-full rounded-2xl bg-red-600 text-white text-center text-lg font-semibold py-4 shadow">
-    Something happened?
-  </a>
 
-  {% with ask_label="Ask about your family's policies", ask_scope="household" %}
-    {% include "partials/ask_box.html" %}
-  {% endwith %}
+<section class="scene" aria-label="Plainplan">
+  <div class="scene__sky"></div>
+  <div class="layer" data-depth="0.10" data-lag="0.035">{{ stained(1600, 760, 10, 5, 3, 0.5, 0.2)|safe }}</div>
+  <div class="layer layer--bottom" data-depth="0.20" data-lag="0.05">
+    <svg viewBox="0 0 1600 380" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <polygon points="0,380 0,230 140,120 260,210 420,70 600,230 760,140 940,250 1120,90 1300,220 1460,130 1600,230 1600,380" fill="url(#gMtn1)"/>
+      <polygon points="420,70 470,130 380,130" fill="rgba(255,255,255,.28)"/><polygon points="1120,90 1170,150 1070,150" fill="rgba(255,255,255,.28)"/>
+    </svg>
+  </div>
+  <div class="layer layer--center scene__shield" data-depth="0.33" data-lag="0.07">
+    <svg viewBox="0 0 420 460" aria-hidden="true">
+      <path d="M130 70 L210 12 L290 70" fill="none" stroke="#C9B8FF" stroke-width="10" stroke-linecap="round" stroke-linejoin="round" opacity=".9"/>
+      <path d="M210 60 L350 108 V232 C350 330 290 392 210 424 C130 392 70 330 70 232 V108 Z" fill="url(#gShield)" stroke="rgba(255,255,255,.55)" stroke-width="3"/>
+      <path d="M210 60 V424 M70 232 H350 M70 108 L210 232 L350 108" stroke="rgba(255,255,255,.22)" stroke-width="1.5" fill="none"/>
+      <polygon points="210,60 350,108 210,232" fill="#7C4DFF" opacity=".22"/><polygon points="70,232 210,232 210,424 130,392" fill="#3FD2C7" opacity=".14"/><polygon points="210,232 350,232 350,232 290,392 210,424" fill="#D95BD0" opacity=".16"/>
+    </svg>
+  </div>
+  <div class="layer layer--bottom" data-depth="0.46" data-lag="0.05">
+    <svg viewBox="0 0 1600 240" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <g fill="url(#gMtn2)">
+        <path d="M60 240V150l50-44 50 44v90z"/><path d="M200 240V120l60-52 60 52v120z"/><path d="M360 240V160l44-38 44 38v80z"/>
+        <path d="M1130 240V150l54-46 54 46v90z"/><path d="M1280 240V110l66-58 66 58v130z"/><path d="M1450 240V170l42-36 42 36v70z"/>
+      </g>
+      <g fill="#FFC76B"><rect x="248" y="130" width="14" height="18" rx="3"/><rect x="288" y="130" width="14" height="18" rx="3" opacity=".6"/><rect x="1328" y="120" width="14" height="18" rx="3"/><rect x="1176" y="150" width="12" height="16" rx="3" opacity=".7"/><rect x="392" y="164" width="12" height="16" rx="3"/></g>
+    </svg>
+  </div>
 
-  <section class="space-y-3">
-    <div class="flex items-center justify-between">
-      <h2 class="font-semibold">Your family</h2>
-      <a href="/family" class="text-sm underline">Edit</a>
+  <div class="container scene__in">
+    <div class="scene__copy" data-depth="0.55" data-lag="0.14" data-fade>
+      <span class="eyebrow">YOUR FAMILY'S INSURANCE</span>
+      <h1 class="hd">Your family's policies, in plain words.</h1>
+      <p>Every answer comes with a quote from your own documents. No quote, no answer.</p>
+      <div class="scene__cta">
+        <a class="btn btn--primary btn--lg" href="/situation">{{ icon('shield', 22) }}<span>Something happened?</span></a>
+        <a class="btn btn--ghost btn--lg" href="#ask">Ask a question</a>
+      </div>
     </div>
-    {% if not has_members %}
-      <a href="/family" class="block rounded-xl border-2 border-dashed border-slate-300 p-4 text-center text-sm">
-        + Add your family members
-      </a>
+    <div class="scene__bot" data-depth="0.78" data-lag="0.2">{{ bot(220, cls='bot--hero') }}</div>
+  </div>
+
+  <div class="layer layer--bottom layer--front" data-depth="1.15" data-lag="0.1">
+    <svg viewBox="0 0 1600 200" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <path d="M0 200V120C120 90 220 130 340 110C470 88 540 40 700 70C860 100 960 140 1100 100C1240 62 1380 90 1600 60V200Z" fill="#12092B"/>
+      <path d="M0 200V150C160 130 300 170 460 150C640 126 760 170 940 150C1120 130 1340 150 1600 120V200Z" fill="#0B0618"/>
+    </svg>
+  </div>
+</section>
+
+<div class="sheet">
+  <div class="container stack">
+
+    {% if ava %}
+      {{ ask_box('ask', "Ask about your family's policies", 'household', "e.g. Are Ava's braces covered?",
+                 ["Are Ava's braces covered?", "Are Mom's braces covered?", "Is teeth whitening covered?"]) }}
+    {% else %}
+      {{ ask_box('ask', "Ask about your family's policies", 'household', "e.g. Is the emergency room covered?") }}
     {% endif %}
-    <div class="grid grid-cols-2 gap-3">
-      {% for tile in tiles %}
-        <a href="{{ tile.href }}" class="rounded-xl bg-white border border-slate-200 p-4 space-y-1">
-          <div class="font-medium">{{ tile.title }}</div>
-          <div class="text-xs text-slate-500">{{ tile.subtitle }}</div>
-          <div class="text-lg h-7">{% for t in tile.types %}{{ ICONS[t] }}{% endfor %}</div>
-        </a>
-      {% endfor %}
-    </div>
-  </section>
 
-  <section class="rounded-xl bg-white border border-slate-200 p-4 text-sm space-y-1">
-    <h2 class="font-semibold">How it works</h2>
-    <p>AI reads your policy &rarr; our code checks every quote &rarr; no quote, no answer.</p>
-  </section>
+    <section aria-labelledby="fam" class="reveal-group">
+      <div class="between"><h2 id="fam" class="hd sec-title">Your family</h2><a class="linkbtn" href="/family">Edit family</a></div>
+      <div class="tiles">
+        {% for m in members %}
+        <a class="tile tile--{{ tone(m) }} reveal" style="--d:{{ loop.index0 * 0.12 }}s" href="/member/{{ m.id }}">
+          {{ avatar(m, 'lg') }}
+          <span class="tile__name"><b class="hd">{{ m.nickname }}</b><small>{{ m.role.capitalize() }}</small></span>
+          <span class="tile__icons">{% for t in types_of[m.id] %}<span class="ico-chip" title="{{ TYPE_LABEL[t] }}">{{ icon(t, 18) }}</span>{% endfor %}</span>
+        </a>
+        {% endfor %}
+        {% if not members %}
+        <a class="tile tile--empty reveal" href="/family"><span class="tile__name"><b class="hd">No one here yet</b><small>Add your first family member</small></span><span class="ico-chip">{{ icon('plus', 18) }}</span></a>
+        {% endif %}
+        <a class="tile tile--shared reveal" style="--d:{{ (members|length) * 0.12 }}s" href="/shared">
+          <svg class="tile__roof" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#C9B8FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8M5 10v10h14V10M10 20v-5h4v5"/></svg>
+          <span class="tile__name"><b class="hd">Shared</b><small>House, car, anything owned together</small></span>
+          <span class="tile__icons">{% for t in shared_types %}<span class="ico-chip" title="{{ TYPE_LABEL[t] }}">{{ icon(t, 18) }}</span>{% endfor %}</span>
+        </a>
+      </div>
+    </section>
+
+    <section id="how" aria-labelledby="how-t" class="reveal-group">
+      <h2 id="how-t" class="hd sec-title">How it works</h2>
+      <div class="flips">
+        <button type="button" class="flip reveal" style="--d:0s" data-flip aria-label="Step 1. Tap to flip">
+          <span class="flip__in"><span class="flip__f glass"><b class="step-n hd">1</b><b class="hd">AI reads your policy</b><span class="muted">It pulls out the key fields and the exact lines they came from.</span>{% if example %}<small class="hint">Tap to see an example</small>{% endif %}</span>
+          <span class="flip__b glass glass--violet">{% if example %}<small class="eyebrow">IN THIS FAMILY</small><span>{{ example.policy.insurer or TYPE_LABEL[example.policy.type] }} {{ example.policy.type }} plan: {{ example.total }} key facts looked for, {{ example.verified }} verified, {{ example.missing }} not found.</span>{% endif %}</span></span>
+        </button>
+        <button type="button" class="flip reveal" style="--d:.18s" data-flip aria-label="Step 2. Tap to flip">
+          <span class="flip__in"><span class="flip__f glass"><b class="step-n hd">2</b><b class="hd">Our code checks every quote</b><span class="muted">Each quote must appear word for word in your PDF, and every number must be in the quote.</span>{% if example %}<small class="hint">Tap to see an example</small>{% endif %}</span>
+          <span class="flip__b glass glass--teal">{% if example %}<small class="eyebrow">IN THIS FAMILY</small><span>“{{ example.quote }}” found on p. {{ example.page }}, word for word.</span>{% endif %}</span></span>
+        </button>
+        <button type="button" class="flip reveal" style="--d:.36s" data-flip aria-label="Step 3. Tap to flip">
+          <span class="flip__in"><span class="flip__f glass"><b class="step-n step-n--ink hd">{{ icon('check', 20, 3) }}</b><b class="hd">No quote, no answer</b><span class="muted">If we cannot verify it, we say so and give you the claims phone number.</span><small class="hint">Tap to see an example</small></span>
+          <span class="flip__b glass glass--pink"><small class="eyebrow">TRY IT</small><span>Ask “Is teeth whitening covered?” and you get “I couldn't find this in your documents.”</span></span></span>
+        </button>
+      </div>
+    </section>
+
+    {% if household.is_demo %}
+    <section id="judges" aria-labelledby="j-t" class="judges glass glass--violet reveal">
+      <span class="badge badge--light">FOR JUDGES</span>
+      <h2 id="j-t" class="hd">Try the full flow in 3 minutes</h2>
+      <p class="muted">No sign-up. Real public sample policies go through the real product logic: the AI reads, our code verifies.</p>
+      <ol>
+        <li>Ask: "Are Ava's braces covered?" Tap the quote: it is word for word from the plan.</li>
+        <li>Ask something that is not in the policy and see the honest refusal.</li>
+        <li>Press Something happened? and type: "rear-ended, Dad's neck hurts".</li>
+        <li>Upload your own PDF with + Add policy on any family member.</li>
+      </ol>
+      <div class="row">
+        {% if ava %}<a class="btn btn--primary" href="/member/{{ ava.id }}">Open Ava</a>{% endif %}
+        <a class="btn btn--ghost" href="/situation">Something happened?</a>
+      </div>
+    </section>
+    {% endif %}
+  </div>
+</div>
 {% endblock %}

@@ -1,8 +1,11 @@
 {% extends "base.html" %}
+{% from "_macros.html" import icon, bot %}
+{% block title %}{{ household.name }}: Plainplan{% endblock %}
 {% block content %}
-  <h1 class="text-2xl font-semibold">{{ household.name }}</h1>
-  <p class="text-sm text-slate-600">Add everyone your policies cover. Nickname and role only, nothing else.</p>
+<div class="container stack page-top narrow">
+  <a class="back" href="/">{{ icon('back', 18) }}Family</a>
+  <header class="sit__head">{{ bot(84) }}<div><h1 class="hd">{{ household.name }}</h1><p class="muted">Add everyone your policies cover. Nickname and role only.</p></div></header>
   {% include "partials/members_list.html" %}
-  <p class="text-sm text-slate-500">The Shared tile (house, car, anything joint) is always there.</p>
-  <a href="/" class="block w-full rounded-lg bg-slate-900 text-white text-center py-2">Done</a>
+  <a class="btn btn--primary btn--lg" href="/">Done{{ icon('arrow', 20, 2.4) }}</a>
+</div>
 {% endblock %}

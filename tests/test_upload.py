@@ -58,7 +58,8 @@ def test_upload_stores_masked_chunks_and_deletes_file():
 
         page = client.get(f"/policy/{policy_id}").text
         assert "covers Dad" in page and "4 pages read" in page
-        assert "🚗" in client.get(f"/member/{dad}").text
+        assert '<b class="hd">Auto</b>' in client.get(f"/member/{dad}").text  # the policy card
+        assert 'title="Auto"' in client.get("/").text  # the icon on Dad's tile
 
 
 @needs_sample

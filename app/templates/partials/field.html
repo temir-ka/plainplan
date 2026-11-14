@@ -1,20 +1,25 @@
-{# One key field row; HTMX swaps it with field_edit.html and back. needs: f, page #}
-<div id="field-{{ f.id }}" class="text-sm border-t border-slate-100 pt-2 first:border-0 first:pt-0">
-  <div class="flex justify-between gap-3">
-    <span class="text-slate-600">{{ f.name.replace("_", " ").capitalize() }}</span>
-    <span class="text-right">
-      {% if f.value %}<span class="font-medium">{{ f.value }}</span>
-      {% else %}<span class="text-slate-400">Not found — enter manually</span>{% endif %}
-      <button hx-get="/fields/{{ f.id }}/edit" hx-target="#field-{{ f.id }}" hx-swap="outerHTML"
-              class="ml-1 text-xs text-slate-500 underline">Edit</button>
-    </span>
-  </div>
-  {% if f.verified %}
-    <details class="mt-1">
-      <summary class="cursor-pointer text-xs text-emerald-700">✓ verified · p. {{ page or "?" }}</summary>
-      <blockquote class="mt-1 border-l-2 border-emerald-300 pl-2 text-xs text-slate-600">“{{ f.quote }}”</blockquote>
-    </details>
-  {% elif f.source == "user" %}
-    <span class="text-xs text-slate-500">Entered by you</span>
-  {% endif %}
+{% from "_macros.html" import icon, quote %}
+{# One key fact; HTMX swaps it with field_edit.html and back. needs: f, page, policy (for the quote label) #}
+{% set label = f.name.replace("_", " ").capitalize() %}
+{% if f.verified %}
+<details id="field-{{ f.id }}" class="fact glass">
+  <summary><span><small>{{ label }}</small><b class="hd">{{ f.value }}</b></span>
+    <span class="chip chip--ok">{{ icon('check', 13, 3) }}Verified · p. {{ page or "?" }}</span></summary>
+  {{ quote(f.quote, (policy.insurer if policy else "") or "Your document", page or "?") }}
+  <button class="linkbtn" type="button" hx-get="/fields/{{ f.id }}/edit" hx-target="#field-{{ f.id }}" hx-swap="outerHTML">Edit</button>
+</details>
+{% elif f.source == "user" and f.value %}
+<div id="field-{{ f.id }}" class="fact glass">
+  <div class="between"><span><small>{{ label }}</small><b class="hd">{{ f.value }}</b></span>
+    <span><span class="chip chip--manual">Entered by you</span>
+      <button class="linkbtn" type="button" hx-get="/fields/{{ f.id }}/edit" hx-target="#field-{{ f.id }}" hx-swap="outerHTML">Edit</button></span></div>
 </div>
+{% else %}
+<div id="field-{{ f.id }}" class="fact fact--warn glass">
+  <div class="between"><span><small>{{ label }}</small><b class="hd">Not found</b></span><span class="chip chip--warn">Enter manually</span></div>
+  <form hx-post="/fields/{{ f.id }}" hx-target="#field-{{ f.id }}" hx-swap="outerHTML" class="ask__row">
+    <input class="input" name="value" maxlength="120" placeholder="Enter manually" aria-label="{{ label }}" required>
+    <button class="btn btn--dark" type="submit">Save</button>
+  </form>
+</div>
+{% endif %}

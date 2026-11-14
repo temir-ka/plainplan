@@ -1,27 +1,16 @@
-{# needs: status, label, answer, quotes, refusal, policy #}
-{% set pill = {"covered": "bg-emerald-100 text-emerald-800", "not_covered": "bg-rose-100 text-rose-800",
-               "unclear": "bg-slate-200 text-slate-700"}[status] %}
-<div class="rounded-xl bg-white border border-slate-200 p-4 space-y-3 text-sm">
-  <span class="inline-block rounded-full px-3 py-1 text-xs font-semibold {{ pill }}">{{ label }}</span>
-
+{% from "_macros.html" import icon, bot, status as status_pill, quote, call %}
+{# needs: question, status, label, answer, quotes, refusal, policy #}
+<article class="answer glass pad stack stack--sm">
+  {% if question %}<div class="between"><b class="hd bubble">{{ question }}</b></div>{% endif %}
   {% if refusal %}
-    <p>{{ refusal }}
-      {% if policy and policy.claims_phone %}
-        Call {{ policy.insurer or "your insurer" }}:
-        <a href="tel:{{ policy.claims_phone }}" class="underline font-medium">{{ policy.claims_phone }}</a>.
-      {% elif policy %}
-        Call {{ policy.insurer or "your insurer" }} — the number is on your card or policy.
-      {% endif %}
-    </p>
+    <div class="between">{{ status_pill('unclear') }}{% if policy %}<span class="muted small">{{ policy.insurer }}</span>{% endif %}</div>
+    <div class="notfound">{{ bot(56, dim=True) }}<p><b class="hd">{{ refusal }}</b><br><span class="muted">So I won't guess.</span></p></div>
+    {% if policy and policy.claims_phone %}{{ call('Call ' ~ (policy.insurer or 'your insurer'), policy.claims_phone) }}
+    {% elif policy %}<p class="muted small">Call {{ policy.insurer or "your insurer" }}: the number is on your card or policy.</p>{% endif %}
   {% else %}
-    <p>{{ answer }}</p>
-    <ul class="space-y-2">
-      {% for q in quotes %}
-        <li class="border-l-2 border-emerald-300 pl-2 text-xs text-slate-600">
-          <span class="font-medium text-slate-800">{{ q.label }} · p. {{ q.page }}</span> · “{{ q.text }}”
-        </li>
-      {% endfor %}
-    </ul>
-    <p class="text-xs text-emerald-700">✓ Every quote was checked against your document.</p>
+    <div class="between">{{ status_pill(status) }}{% if policy %}<span class="muted small">{{ policy.insurer }}</span>{% endif %}</div>
+    <p class="answer__t">{{ answer }}</p>
+    {% for q in quotes %}{{ quote(q.text, q.label, q.page) }}{% endfor %}
+    <small class="muted">{{ icon('check', 13, 3) }} Every quote was checked word for word against your document. Your insurer makes the final decision.</small>
   {% endif %}
-</div>
+</article>

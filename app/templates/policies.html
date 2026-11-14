@@ -1,53 +1,60 @@
 {% extends "base.html" %}
-{% block title %}{{ title }} · Plainplan{% endblock %}
+{% from "_macros.html" import icon, bot, avatar, ask_box %}
+{% block title %}{{ title }}: Plainplan{% endblock %}
 {% block content %}
-  <div>
-    <a href="/" class="text-sm underline">&larr; Family</a>
-    <h1 class="mt-2 text-2xl font-semibold">{{ title }}</h1>
-    <p class="text-sm text-slate-500">{{ subtitle }}</p>
-  </div>
+<div class="container stack page-top">
+  <a class="back" href="/">{{ icon('back', 18) }}Family</a>
+  <header class="memberhead">
+    {% if member %}{{ avatar(member, 'xl') }}{% else %}<span class="avatar avatar--violet avatar--xl">{{ icon('home', 34) }}</span>{% endif %}
+    <div><h1 class="hd">{{ title }}</h1><p class="muted">{{ subtitle }} · {{ policies|length }} polic{{ 'y' if policies|length == 1 else 'ies' }}</p></div>
+  </header>
 
-  <section class="space-y-3">
-    {% for p in policies %}
-      <a href="/policy/{{ p.id }}" class="flex items-center gap-3 rounded-xl bg-white border border-slate-200 p-4">
-        <span class="text-2xl">{{ ICONS[p.type] }}</span>
-        <div class="flex-1 min-w-0">
-          <div class="font-medium">{{ p.insurer or p.type.capitalize() }}</div>
-          <div class="text-xs text-slate-500">
-            {{ p.type.capitalize() }}{% if p.period_end %} · ends {{ p.period_end.strftime("%b %-d, %Y") }}{% endif %}
-          </div>
-        </div>
-        <span class="text-xs text-emerald-700">✓ {{ verified.get(p.id, 0) }} verified</span>
+  {% if error %}<p class="note note--warn" role="alert">{{ error }}</p>{% endif %}
+
+  <section aria-labelledby="pol">
+    <h2 id="pol" class="hd sec-title sec-title--sm">Policies</h2>
+    <div class="pgrid">
+      {% for p in policies %}
+      <a class="pcard glass reveal" style="--d:{{ loop.index0 * 0.1 }}s" href="/policy/{{ p.id }}">
+        <span class="pcard__top"><span class="ico-chip ico-chip--lg">{{ icon(p.type, 24) }}</span><span><b class="hd">{{ TYPE_LABEL[p.type] }}</b><small>{{ p.insurer or "Insurer not found yet" }}</small></span>{{ icon('chev', 20) }}</span>
+        <span class="pcard__bot"><small>{% if p.period_end %}Ends {{ p.period_end.strftime("%b %-d, %Y") }}{% else %}End date not set{% endif %}</small>
+          {% if totals.get(p.id) %}<span class="chip chip--ok">{{ icon('check', 13, 3) }}{{ verified.get(p.id, 0) }} of {{ totals[p.id] }} verified</span>{% endif %}</span>
       </a>
-    {% endfor %}
-
-    <form method="post" action="/policies" enctype="multipart/form-data"
-          class="rounded-xl border-2 border-dashed border-slate-300 p-4 text-sm space-y-3">
-      <div class="font-medium">+ Add policy</div>
-      {% if error %}<p class="text-red-600">{{ error }}</p>{% endif %}
-      <input type="file" name="file" accept="application/pdf,.pdf" required class="block w-full text-sm">
-      <select name="type" required class="w-full rounded-lg border border-slate-300 px-2 py-2">
-        <option value="">Policy type…</option>
-        {% for t in policy_types %}<option value="{{ t }}">{{ ICONS[t] }} {{ t.capitalize() }}</option>{% endfor %}
-      </select>
-      {% if members %}
-        <fieldset class="space-y-1">
-          <legend class="text-slate-600">Who does it cover? Leave empty for Shared.</legend>
-          {% for m in members %}
-            <label class="mr-3 inline-flex items-center gap-1">
-              <input type="checkbox" name="member_ids" value="{{ m.id }}" {% if m.id == preselected %}checked{% endif %}>
-              {{ m.nickname }}
-            </label>
-          {% endfor %}
-        </fieldset>
-      {% endif %}
-      <p class="text-xs text-slate-500">We read your PDF once, keep the text to quote it, and delete the file.
-        Text is processed by an AI provider. Don't upload ID cards.</p>
-      <button class="w-full rounded-lg bg-slate-900 text-white py-2"
-              onclick="if (this.form.checkValidity()) { this.textContent = 'Reading your policy… (up to a minute)'; }">
-        Upload</button>
-    </form>
+      {% endfor %}
+      <button type="button" class="pcard pcard--add reveal" data-open="dlg-add" style="--d:{{ policies|length * 0.1 }}s">
+        <span class="pcard__top">{{ icon('plus', 22, 2.4) }}<b class="hd">Add policy{% if member %} for {{ member.nickname }}{% endif %}</b></span>
+        <small>Upload a PDF. We read it once and delete the file.</small>
+      </button>
+    </div>
   </section>
 
-  {% include "partials/ask_box.html" %}
+  {{ ask_box('ask-m', ask_label, ask_scope, 'e.g. Is a night guard covered?', [],
+             'I look only at ' ~ (member.nickname ~ "'s" if member else 'the shared') ~ ' policies.') }}
+</div>
+
+<dialog id="dlg-add" class="dlg" aria-labelledby="add-title" {% if error %}data-reopen{% endif %}>
+  <button class="dlg__x" type="button" data-close aria-label="Close">{{ icon('x', 20) }}</button>
+  <h2 class="hd" id="add-title">Add a policy{% if member %} for {{ member.nickname }}{% endif %}</h2>
+  <form action="/policies" method="post" enctype="multipart/form-data" class="stack stack--sm"
+        onsubmit="var b=this.querySelector('[type=submit]'); b.disabled=true; b.textContent='Reading your policy… (up to a minute)';">
+    <fieldset class="seg">
+      <legend>Type</legend>
+      {% for t in policy_types %}
+      <label><input type="radio" name="type" value="{{ t }}" required {{ 'checked' if loop.first }}><span>{{ icon(t, 18) }}{{ TYPE_LABEL[t] }}</span></label>
+      {% endfor %}
+    </fieldset>
+    {% if members %}
+    <fieldset class="seg seg--who">
+      <legend>Who does it cover? Leave all off for Shared.</legend>
+      {% for m in members %}
+      <label><input type="checkbox" name="member_ids" value="{{ m.id }}" {{ 'checked' if m.id == preselected }}><span>{{ m.nickname }}</span></label>
+      {% endfor %}
+    </fieldset>
+    {% endif %}
+    <label class="drop" for="pdf">{{ icon('upload', 28) }}<b class="hd">Choose a PDF</b><span class="muted small" data-file-name>Policy or summary of benefits</span></label>
+    <input id="pdf" class="sr" type="file" name="file" accept="application/pdf,.pdf" required>
+    <p class="muted small">We read your PDF once, keep the text to quote it, and delete the file. Text is processed by an AI provider. Don't upload ID cards.</p>
+    <button class="btn btn--primary btn--block" type="submit">Read my policy</button>
+  </form>
+</dialog>
 {% endblock %}

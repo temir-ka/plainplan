@@ -77,7 +77,7 @@ def test_rear_ended_dad_neck_hurts(family, monkeypatch):
     assert "2 of your policies apply" in html and "Heartland · auto" in html and "Sample Health Co. · health" in html
     assert "Sample Home" not in html
     assert "how, when and where" in html and "police report within 5 days" not in html  # invented step dropped
-    assert 'href="tel:(800) 555-0199"' in html
+    assert 'href="tel:8005550199"' in html
     assert "General checklist" in html and "other driver" in html
     assert sorted(calls) == ["auto", "health"]
 
@@ -87,7 +87,7 @@ def test_hurt_but_nobody_named_asks_who(family, monkeypatch):
     fake_llm(monkeypatch, "car_accident", True, "", {})
     html = post(client, "We were rear-ended and someone's neck hurts")
     assert "Who was hurt?" in html and ">Dad<" in html and ">Ava<" in html
-    dad_id = re.search(r'name="member_id" value="(\d+)">\s*<button[^>]*>Dad<', html).group(1)
+    dad_id = re.search(r'name="member_id" value="(\d+)">Dad<', html).group(1)
     html = post(client, "We were rear-ended and someone's neck hurts", member_id=dad_id)
     assert "Who was hurt?" not in html and "Sample Health Co." in html
 
@@ -112,7 +112,7 @@ def test_llm_down_still_gives_checklist(family, monkeypatch):
     client, _ = family
     monkeypatch.setattr(llm, "classify_situation", lambda text, nicks: None)
     html = post(client, "something strange happened")
-    assert "None of your policies clearly applies" in html and "General checklist" in html
+    assert "match this to your policies" in html and "General checklist" in html
 
 
 def test_find_deadline_and_injury():

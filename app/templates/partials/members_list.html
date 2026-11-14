@@ -1,25 +1,25 @@
+{% from "_macros.html" import icon, avatar %}
 {# HTMX swaps this whole block after add/remove. needs: members, with_policies, roles, error #}
-<section id="members" class="space-y-3">
-  <ul class="space-y-2">
-    {% for m in members %}
-      <li class="flex items-center justify-between rounded-xl bg-white border border-slate-200 px-4 py-3">
-        <span><span class="font-medium">{{ m.nickname }}</span>
-          <span class="text-xs text-slate-500">· {{ m.role.capitalize() }}</span></span>
-        {% if m.id not in with_policies %}
-          <button hx-delete="/members/{{ m.id }}" hx-target="#members" hx-swap="outerHTML"
-                  class="text-xs text-slate-500 underline">Remove</button>
-        {% endif %}
-      </li>
-    {% endfor %}
-  </ul>
-
-  <form hx-post="/members" hx-target="#members" hx-swap="outerHTML" class="flex gap-2">
-    <input name="nickname" required maxlength="30" placeholder="Nickname, e.g. Mom"
-           class="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm">
-    <select name="role" class="rounded-lg border border-slate-300 px-2 py-2 text-sm">
-      {% for r in roles %}<option value="{{ r }}">{{ r.capitalize() }}</option>{% endfor %}
-    </select>
-    <button class="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm">Add</button>
+<section id="members" class="stack stack--sm">
+  <form hx-post="/members" hx-target="#members" hx-swap="outerHTML" class="glass pad stack stack--sm">
+    <h2 class="hd big">Who is in your family?</h2>
+    <label class="field"><span>Nickname</span><input class="input" name="nickname" placeholder="e.g. Mom, Dad, Sam" maxlength="30" required></label>
+    <fieldset class="seg seg--2">
+      <legend>Role</legend>
+      {% for r in roles %}<label><input type="radio" name="role" value="{{ r }}" {{ 'checked' if loop.first }}><span>{{ r.capitalize() }}</span></label>{% endfor %}
+    </fieldset>
+    <button class="btn btn--dark" type="submit">{{ icon('plus', 18, 2.4) }}<span>Add to family</span></button>
+    {% if error %}<p class="err" role="alert">{{ error }}</p>{% endif %}
   </form>
-  {% if error %}<p class="text-sm text-red-600">{{ error }}</p>{% endif %}
+
+  <h2 class="hd sec-title sec-title--sm">In your family</h2>
+  <ul class="plain members">
+    {% for m in members %}
+    <li class="glass member-row">{{ avatar(m) }}<span><b class="hd">{{ m.nickname }}</b><small class="muted">{{ m.role.capitalize() }}</small></span>
+      {% if m.id not in with_policies %}
+        <button class="linkbtn" type="button" hx-delete="/members/{{ m.id }}" hx-target="#members" hx-swap="outerHTML">Remove</button>
+      {% endif %}</li>
+    {% endfor %}
+    <li class="glass member-row member-row--shared"><span class="ico-chip">{{ icon('home', 20) }}</span><span><b class="hd">Shared</b><small class="muted">Always there, for house, car and anything owned together</small></span></li>
+  </ul>
 </section>

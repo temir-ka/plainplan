@@ -103,7 +103,7 @@ def test_member_with_policies_cannot_be_removed():
         html = client.delete(f"/members/{dad_id}").text
         assert "Remove Dad&#39;s policies first" in html
         assert "Aetna" in client.get(f"/member/{dad_id}").text
-        assert "🩺" in client.get("/").text
+        assert 'title="Health"' in client.get("/").text
 
 
 def test_delete_data_removes_everything():

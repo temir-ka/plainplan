@@ -61,9 +61,9 @@ def scoped_policies(session: Session, hh_id: str, scope: str, question: str) -> 
     return narrowed or policies
 
 
-def _refusal(request: Request, policy: Policy | None, message: str) -> HTMLResponse:
+def _refusal(request: Request, policy: Policy | None, message: str, question: str = "") -> HTMLResponse:
     return render(request, "partials/answer.html", status="unclear", label=STATUS_LABELS["unclear"],
-                  answer="", quotes=[], refusal=message, policy=policy)
+                  answer="", quotes=[], refusal=message, policy=policy, question=question)
 
 
 @router.post("/ask", response_class=HTMLResponse)
@@ -76,30 +76,30 @@ def ask(request: Request, session: SessionDep, q: Annotated[str, Form()] = "",
 
     policies = scoped_policies(session, hh.id, scope, question)
     if not policies:
-        return _refusal(request, None, "There are no policies here yet. Add one with + Add policy.")
+        return _refusal(request, None, "There are no policies here yet. Add one with + Add policy.", question)
 
     by_policy = {p.id: p for p in policies}
     chunks = list(session.exec(select(Chunk).where(Chunk.policy_id.in_(by_policy))))
     found = search.search(chunks, question)
     top_policy = by_policy[found[0].policy_id] if found else policies[0]
     if not found:
-        return _refusal(request, top_policy, "I couldn't find this in your documents.")
+        return _refusal(request, top_policy, "I couldn't find this in your documents.", question)
 
     result = llm.answer_question(question, found)
     _count_question(session, hh.id)
     if result is None:
-        return _refusal(request, top_policy, "I couldn't check your documents right now.")
+        return _refusal(request, top_policy, "I couldn't check your documents right now.", question)
 
     chunk_by_id = {c.id: c for c in found}
     check = verify(result.answer, [Citation(c.chunk_id, c.quote) for c in result.citations],
                    {c.id: c.text for c in found})
     if result.status == "unclear" or not check.ok:
-        return _refusal(request, top_policy, "I couldn't find this in your documents.")
+        return _refusal(request, top_policy, "I couldn't find this in your documents.", question)
 
     quotes = [ShownQuote(policy_label(by_policy[chunk_by_id[c.chunk_id].policy_id]),
                          chunk_by_id[c.chunk_id].page, c.quote) for c in check.verified]
     return render(request, "partials/answer.html", status=result.status, label=STATUS_LABELS[result.status],
-                  answer=result.answer, quotes=quotes, refusal="", policy=top_policy)
+                  answer=result.answer, quotes=quotes, refusal="", policy=top_policy, question=question)
 
 
 def _count_question(session: Session, hh_id: str) -> None:

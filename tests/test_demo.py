@@ -33,7 +33,7 @@ def demo_on(monkeypatch):
 def test_first_visit_opens_the_parkers(demo_on):
     with TestClient(app) as client:
         html = client.get("/").text
-        assert "The Parkers" in html and "Demo family." in html and "Start my own family" in html
+        assert "The Parkers" in html and "Demo family:" in html and "Start my own family" in html
         for nick in ("Mom", "Dad", "Leo", "Ava"):
             assert nick in html
         hh = client.cookies["hh_id"]
@@ -63,4 +63,4 @@ def test_start_my_own_family_leaves_the_demo(demo_on):
         client.get("/")
         client.post("/start", data={"name": "The Smiths"})
         html = client.get("/").text
-        assert "The Smiths" in html and "Demo family." not in html and "Ava" not in html
+        assert "The Smiths" in html and "Demo family:" not in html and "Ava" not in html

@@ -95,7 +95,14 @@ def _render_policy(policy_id: int, request: Request, session: Session, details_e
     hh_id = request.state.household.id
     policy = own_policy(session, hh_id, policy_id)
     member_ids = covers(session, hh_id).get(policy.id, set())
-    names = [m.nickname for m in session.exec(select(Member).where(Member.id.in_(member_ids)))]
+    covered_members = list(session.exec(select(Member).where(Member.id.in_(member_ids)).order_by(Member.id)))
+    names = [m.nickname for m in covered_members]
+    if not covered_members:
+        back_url, back_label = "/shared", "Shared"
+    elif len(covered_members) == 1:
+        back_url, back_label = f"/member/{covered_members[0].id}", covered_members[0].nickname
+    else:
+        back_url, back_label = "/", "Family"
     chunks = list(session.exec(select(Chunk).where(Chunk.policy_id == policy.id)))
     fields = list(session.exec(select(Field).where(Field.policy_id == policy.id).order_by(Field.id)))
     return render(
@@ -108,6 +115,8 @@ def _render_policy(policy_id: int, request: Request, session: Session, details_e
         ask_label="Ask about this policy",
         ask_scope=f"policy:{policy.id}",
         details_error=details_error,
+        back_url=back_url,
+        back_label=back_label,
     )
 
 
@@ -121,7 +130,8 @@ def _own_field(session: Session, hh_id: str, field_id: int) -> Field:
 
 def _field_partial(request: Request, session: Session, field: Field) -> HTMLResponse:
     chunk = session.get(Chunk, field.chunk_id) if field.chunk_id else None
-    return render(request, "partials/field.html", f=field, page=chunk.page if chunk else None)
+    return render(request, "partials/field.html", f=field, page=chunk.page if chunk else None,
+                  policy=session.get(Policy, field.policy_id))
 
 
 @router.get("/fields/{field_id}", response_class=HTMLResponse)

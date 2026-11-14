@@ -1,68 +1,48 @@
+{% from "_macros.html" import icon, bot, quote, call %}
 {# needs: text, banner, title, checklist, who, ask_who (members) or plans #}
-<div class="space-y-4">
-  {% if banner %}
-    <div role="alert" class="rounded-xl bg-red-600 text-white p-4 font-semibold">
-      If anyone is hurt or in danger, call 911 first.
-      <a href="tel:911" class="ml-2 underline">Call 911</a>
-    </div>
-  {% endif %}
+{% if banner %}
+<div role="alert" class="sos911"><span>{{ icon('alert', 26) }}<b class="hd">If anyone is hurt or in danger, call 911 first.</b></span><a class="btn btn--danger" href="tel:911">Call 911</a></div>
+{% endif %}
 
-  <p class="text-sm text-slate-500">{{ title }}{% if who %} · {{ who }}{% endif %}</p>
+<p class="muted">{{ title }}{% if who %} · {{ who }}{% endif %}</p>
 
-  {% if ask_who %}
-    <div class="rounded-xl bg-white border border-slate-200 p-4 space-y-3">
-      <p class="font-medium">Who was hurt?</p>
-      <div class="flex flex-wrap gap-2">
-        {% for m in ask_who %}
-          <form hx-post="/situation" hx-target="#result" hx-indicator="#working">
-            <input type="hidden" name="text" value="{{ text }}">
-            <input type="hidden" name="member_id" value="{{ m.id }}">
-            <button class="rounded-lg border border-slate-300 px-3 py-1.5 text-sm">{{ m.nickname }}</button>
-          </form>
-        {% endfor %}
-      </div>
-    </div>
-  {% else %}
-    {% if plans %}
-      <p class="font-medium">{{ plans|length }} of your policies apply:
-        {% for p in plans %}{{ ICONS[p.policy.type] }} {{ p.label }}{% if not loop.last %} · {% endif %}{% endfor %}</p>
-    {% else %}
-      <p class="text-sm">None of your policies clearly applies to this. You can still ask a question about them,
-        or call your insurer.</p>
-    {% endif %}
+{% if ask_who %}
+<section class="glass pad stack stack--sm reveal in">
+  <b class="hd big">Who was hurt?</b>
+  <form hx-post="/situation" hx-target="#sit-result" hx-indicator="#sit-wait" class="whogrid">
+    <input type="hidden" name="text" value="{{ text }}">
+    {% for m in ask_who %}<button class="btn btn--ghost" type="submit" name="member_id" value="{{ m.id }}">{{ m.nickname }}</button>{% endfor %}
+  </form>
+</section>
+{% elif not plans %}
+<section class="glass pad stack stack--sm reveal in">
+  <div class="notfound">{{ bot(56, dim=True) }}<p><b class="hd">I couldn't match this to your policies.</b><br><span class="muted">So I won't guess. Check the general checklist below and call your insurer.</span></p></div>
+</section>
+{% endif %}
 
-    {% for p in plans %}
-      <section class="rounded-xl bg-white border border-slate-200 p-4 space-y-3">
-        <div class="flex items-center justify-between gap-2">
-          <h2 class="font-semibold">{{ ICONS[p.policy.type] }} {{ p.label }}</h2>
-          {% if p.policy.claims_phone %}
-            <a href="tel:{{ p.policy.claims_phone }}"
-               class="rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-xs whitespace-nowrap">
-              Call {{ p.policy.claims_phone }}</a>
-          {% endif %}
-        </div>
-        {% if p.steps %}
-          <ol class="space-y-3 list-decimal list-inside text-sm">
-            {% for s in p.steps %}
-              <li>{{ s.text }}
-                {% if s.deadline %}
-                  <span class="ml-1 rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs">⏰ Your policy says “{{ s.deadline }}”</span>
-                {% endif %}
-                <div class="mt-1 border-l-2 border-emerald-300 pl-2 text-xs text-slate-600">p. {{ s.page }} · “{{ s.quote }}”</div>
-              </li>
-            {% endfor %}
-          </ol>
-          <p class="text-xs text-emerald-700">✓ Every step quotes your document.</p>
-        {% else %}
-          <p class="text-sm">I couldn't find clear steps for this in the document.
-            Call {{ p.policy.insurer or "your insurer" }}{% if p.policy.claims_phone %} at {{ p.policy.claims_phone }}{% endif %}.</p>
-        {% endif %}
-      </section>
+{% if plans %}
+<h2 class="hd sec-title sec-title--sm">{{ plans|length }} of your policies apply</h2>
+{% for p in plans %}
+<article class="glass pad stack stack--sm reveal in">
+  <header class="between"><span class="row"><span class="ico-chip ico-chip--lg">{{ icon(p.policy.type, 24) }}</span>
+    <span><b class="hd big">{{ TYPE_LABEL[p.policy.type] }}</b><br><small class="muted">{{ p.policy.insurer or "Insurer not set" }}</small></span></span></header>
+  {% if p.policy.type == 'health' %}<p class="muted small">What this plan says. Plainplan does not tell you which kind of care to choose.</p>{% endif %}
+  {% if p.steps %}
+  <ol class="steps">
+    {% for s in p.steps %}
+    <li class="reveal in" style="--d:{{ loop.index0 * 0.12 }}s"><span class="steps__n hd">{{ loop.index }}</span><div><b class="hd">{{ s.text }}</b>{{ quote(s.quote, p.label, s.page) }}
+      {% if s.deadline %}<span class="chip chip--warn">{{ icon('cal', 14) }}Your policy says “{{ s.deadline }}”</span>{% endif %}</div></li>
     {% endfor %}
+  </ol>
+  {% else %}
+  <p>I couldn't find clear steps for this in the document. Call {{ p.policy.insurer or "your insurer" }}.</p>
   {% endif %}
+  {% if p.policy.claims_phone %}{{ call('Call claims', p.policy.claims_phone) }}{% endif %}
+</article>
+{% endfor %}
+{% endif %}
 
-  <section class="rounded-xl bg-slate-100 p-4 text-sm space-y-2">
-    <h2 class="font-semibold">General checklist <span class="font-normal text-slate-500">(not from your policy)</span></h2>
-    <ul class="list-disc list-inside space-y-1">{% for item in checklist %}<li>{{ item }}</li>{% endfor %}</ul>
-  </section>
-</div>
+<section class="glass pad stack stack--sm reveal in dashed">
+  <div class="between"><h2 class="hd big">General checklist</h2><span class="chip chip--warn">Not from your policy</span></div>
+  <ul class="plain">{% for item in checklist %}<li>{{ item }}</li>{% endfor %}</ul>
+</section>

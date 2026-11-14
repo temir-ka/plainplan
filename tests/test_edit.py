@@ -35,7 +35,7 @@ def setup():
 def test_policy_page_shows_verified_and_not_found(setup):
     client, policy_id, _, _ = setup
     html = client.get(f"/policy/{policy_id}").text
-    assert "✓ verified · p. 2" in html and "Not found — enter manually" in html
+    assert "Verified · p. 2" in html and "Enter manually" in html
 
 
 def test_editing_a_field_marks_it_entered_by_you(setup):
@@ -63,7 +63,7 @@ def test_save_details(setup):
     form = {"insurer": "Delta Dental", "claims_phone": "1-800-555-0100", "period_start": "2026-01-01",
             "period_end": "2026-12-31", "premium_monthly": "38.50", "premium_due_day": "1"}
     html = client.post(f"/policy/{policy_id}/details", data=form).text  # follows the redirect
-    assert "Delta Dental" in html and "Dec 31, 2026" in html and "/month" in html
+    assert "Delta Dental" in html and "Dec 31, 2026" in html and "/ month" in html
     assert "Some details entered by you" in html
     with Session(engine) as s:
         p = s.get(Policy, policy_id)
