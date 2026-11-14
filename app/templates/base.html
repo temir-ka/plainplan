@@ -36,14 +36,13 @@
   <div class="container topbar__in">
     <a class="brand" href="/" aria-label="Plainplan home">{{ bot(40) }}<span class="hd">Plainplan</span></a>
     <nav class="nav" aria-label="Main">
-      <a href="/">Family</a>
       <a href="/#how">How it works</a>
       <a href="/pricing">Pricing</a>
       <a href="/#judges">For judges</a>
     </nav>
     <div class="topbar__right">
       <a class="household" href="/family" title="Your household">{{ household.name }}{% if household.is_demo %}<span class="badge">DEMO</span>{% endif %}</a>
-      {% if household.is_demo %}<a class="btn btn--ghost btn--sm wide-only" href="/start">Start my own family</a>{% endif %}
+      {% if household.is_demo %}<a class="btn btn--ghost btn--sm xwide-only" href="/start">Start my own family</a>{% endif %}
       <a class="btn btn--primary btn--sos" href="/situation">{{ icon('shield', 20) }}<span>Something happened?</span></a>
     </div>
   </div>

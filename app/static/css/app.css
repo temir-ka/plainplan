@@ -307,3 +307,21 @@ dialog::backdrop{background:rgba(5,2,14,.65);-webkit-backdrop-filter:blur(6px);b
 .member-row .linkbtn{margin-left:auto;min-height:0}
 @media (max-width:560px){.grid2{grid-template-columns:1fr}}
 @media (max-width:900px){.wide-only{display:none}}
+
+/* ---- header fit: one line, no wrapping ---- */
+.nav a,.btn--sos,.household,.topbar .btn{white-space:nowrap}
+.brand{white-space:nowrap}
+@media (max-width:1399px){.xwide-only{display:none}}
+@media (max-width:1100px){.nav{display:none}}
+
+/* ---- phone hero: content-sized, no shield behind the text ---- */
+@media (max-width:560px){
+  .scene{height:auto;min-height:0}
+  .scene__in{height:auto;padding:40px 0 110px}
+  .scene__copy{position:relative;left:auto;right:auto;top:auto;margin:0;gap:14px}
+  .scene__copy h1{font-size:40px}
+  .scene__shield{display:none}
+  .sheet{margin-top:-56px}
+  .household{padding:6px 8px 6px 12px;font-size:13px}
+  .brand{font-size:20px}
+}
