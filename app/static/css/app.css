@@ -92,7 +92,7 @@ button,input,textarea{font:inherit;color:inherit}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.55}}
 
 /* ---- hero scene (layered parallax) ---- */
-.scene{position:relative;height:clamp(620px,92vh,780px);overflow:hidden;isolation:isolate}
+.scene{position:relative;height:clamp(560px,72vh,660px);overflow:hidden;isolation:isolate}
 .scene__sky{position:absolute;inset:0;background:linear-gradient(180deg,#B35BC6 0%,#6A3BE0 38%,#24115F 72%,var(--bg0) 100%);opacity:.9}
 .scene::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(90deg,rgba(11,6,24,.78) 0%,rgba(11,6,24,.45) 42%,rgba(11,6,24,0) 70%)}
 .layer{position:absolute;inset:0;will-change:transform;pointer-events:none}
@@ -102,9 +102,9 @@ button,input,textarea{font:inherit;color:inherit}
 .scene__shield{z-index:5;display:flex;align-items:center;justify-content:flex-end;padding:40px 9% 0 0}
 .scene__shield svg{height:76%;width:auto;filter:drop-shadow(0 0 40px rgba(201,184,255,.5))}
 .scene__in{position:relative;height:100%;z-index:5}
-.scene__copy{position:absolute;left:24px;top:50%;margin-top:-190px;max-width:620px;display:flex;flex-direction:column;gap:18px;will-change:transform,opacity}
+.scene__copy{position:absolute;left:24px;top:42%;margin-top:-170px;max-width:620px;display:flex;flex-direction:column;gap:18px;will-change:transform,opacity}
 .eyebrow{font-size:13px;font-weight:800;letter-spacing:.14em;color:var(--lilac)}
-.scene__copy h1{font-size:clamp(38px,5.4vw,68px);line-height:1.04;font-weight:800;letter-spacing:-.03em}
+.scene__copy h1{font-size:clamp(38px,4.2vw,58px);line-height:1.04;font-weight:800;letter-spacing:-.03em}
 .scene__copy p{font-size:clamp(17px,1.6vw,20px);color:#E6DEFB;max-width:520px}
 .scene__cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px}
 .scene__bot{position:absolute;right:13%;bottom:21%;will-change:transform}
@@ -365,3 +365,18 @@ dialog::backdrop{background:rgba(5,2,14,.65);-webkit-backdrop-filter:blur(6px);b
   .ico-chip--lg{width:40px;height:40px;border-radius:12px}
   .pcard .chip--ok{font-size:12px;padding:4px 10px;min-height:0}
 }
+
+/* judges tour: compact, right under the hero, every step is one tap */
+.judges--top{padding:22px 24px;gap:14px}
+.judges__head{display:flex;flex-direction:column;align-items:flex-start;gap:8px}
+.judges__head p{margin:0;line-height:1.45}.judges__head b{font-size:18px}
+.judges .tour{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:100%}
+.tour__step{display:flex;gap:12px;align-items:flex-start;width:100%;height:100%;padding:14px;border-radius:18px;text-align:left;
+  background:rgba(255,255,255,.08);border:1px solid rgba(201,184,255,.35);color:#fff;font:inherit;cursor:pointer;text-decoration:none;
+  transition:transform .2s var(--ease),background .2s}
+.tour__step:hover{transform:translateY(-2px);background:rgba(255,255,255,.14)}
+.tour__step>span:last-child{display:flex;flex-direction:column;gap:2px;line-height:1.35}
+.tour__step small{color:var(--muted);font-size:13px}
+.tour__n{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:var(--lilac);color:var(--ink);font-weight:800;font-size:14px}
+@media (max-width:1000px){.judges .tour{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:560px){.judges--top{padding:16px}.judges__head b{font-size:16px}.judges .tour{grid-template-columns:1fr;gap:8px}.tour__step{padding:11px 12px}}

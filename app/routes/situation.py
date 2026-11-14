@@ -57,8 +57,8 @@ class PolicyPlan:
 
 
 @router.get("/situation", response_class=HTMLResponse)
-def situation_page(request: Request):
-    return render(request, "situation.html")
+def situation_page(request: Request, text: str = ""):
+    return render(request, "situation.html", prefill=text[:500])
 
 
 MIN_STEP_QUOTE_CHARS = 25  # a fragment like "Does this plan use a" exists in the text but proves no step

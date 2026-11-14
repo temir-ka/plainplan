@@ -54,6 +54,28 @@
 <div class="sheet">
   <div class="container stack">
 
+    {% if household.is_demo %}
+    <section id="judges" aria-labelledby="j-t" class="judges judges--top glass glass--violet">
+      <div class="judges__head">
+        <span class="badge badge--light">FOR JUDGES · 2-MINUTE TOUR</span>
+        <p id="j-t"><b class="hd">The Parkers are a demo family with 6 real public policy documents.</b>
+          <span class="muted">The AI reads them, our code checks every quote. Names, dates and premiums are made up.</span></p>
+      </div>
+      <ol class="tour">
+        {% if ava %}
+        <li><button type="button" class="tour__step" data-fill="#ask-q" data-text="Are Ava's braces covered?" data-submit>
+          <span class="tour__n">1</span><span><b>Ask a question</b><small>"Are Ava's braces covered?" → answer + exact quote</small></span></button></li>
+        <li><button type="button" class="tour__step" data-fill="#ask-q" data-text="Is teeth whitening covered?" data-submit>
+          <span class="tour__n">2</span><span><b>See an honest refusal</b><small>Not in the policy → "I won't guess"</small></span></button></li>
+        {% endif %}
+        <li><a class="tour__step" href="/situation?text={{ "Our car was rear-ended and Dad's neck hurts"|urlencode }}">
+          <span class="tour__n">3</span><span><b>Something happened?</b><small>A car accident → which policies apply, steps with quotes</small></span></a></li>
+        <li><a class="tour__step" href="/start">
+          <span class="tour__n">4</span><span><b>Try your own PDF</b><small>Start a family and upload any text PDF policy</small></span></a></li>
+      </ol>
+    </section>
+    {% endif %}
+
     {% if ava %}
       {{ ask_box('ask', "Ask about your family's policies", 'household', "e.g. Are Ava's braces covered?",
                  ["Are Ava's braces covered?", "Are Mom's braces covered?", "Is teeth whitening covered?"]) }}
@@ -118,24 +140,6 @@
       </div>
     </section>
 
-    {% if household.is_demo %}
-    <section id="judges" aria-labelledby="j-t" class="judges glass glass--violet reveal">
-      <span class="badge badge--light">FOR JUDGES</span>
-      <h2 id="j-t" class="hd">Try the full flow in 3 minutes</h2>
-      <p class="muted">No sign-up. Real public sample policies go through the real product logic: the AI reads, our code verifies.</p>
-      <p class="muted small">Demo family: names, dates and premiums are made up. Policy texts are real public sample documents.</p>
-      <ol>
-        <li>Ask: "Are Ava's braces covered?" Tap the quote: it is word for word from the plan.</li>
-        <li>Ask something that is not in the policy and see the honest refusal.</li>
-        <li>Press Something happened? and tap "Our car was rear-ended and Dad's neck hurts".</li>
-        <li>Upload your own PDF with + Add policy on any family member.</li>
-      </ol>
-      <div class="row">
-        {% if ava %}<a class="btn btn--primary" href="/member/{{ ava.id }}">Open Ava</a>{% endif %}
-        <a class="btn btn--ghost" href="/situation">Something happened?</a>
-      </div>
-    </section>
-    {% endif %}
   </div>
 </div>
 {% endblock %}

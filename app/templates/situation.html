@@ -9,7 +9,7 @@
     <div class="sit__head">{{ bot(72) }}<div><h1 class="hd">What happened?</h1><p class="muted">Describe it in your own words. Say who was involved.</p></div></div>
     <form hx-post="/situation" hx-target="#sit-result" hx-indicator="#sit-wait" hx-disabled-elt="find button[type=submit]" class="stack stack--sm">
       <label class="sr" for="sit-text">What happened</label>
-      <textarea id="sit-text" class="input input--area" name="text" required maxlength="500" placeholder="e.g. Someone rear-ended our car and Dad's neck hurts"></textarea>
+      <textarea id="sit-text" class="input input--area" name="text" required maxlength="500" placeholder="e.g. Someone rear-ended our car and Dad's neck hurts"{% if prefill %} autofocus{% endif %}>{{ prefill }}</textarea>
       <div class="chips">
         <button type="button" class="chip" data-fill="#sit-text" data-text="Our car was rear-ended and Dad's neck hurts">Our car was rear-ended and Dad's neck hurts</button>
         <button type="button" class="chip" data-fill="#sit-text" data-text="A pipe burst and flooded the kitchen">A pipe burst and flooded the kitchen</button>
