@@ -120,7 +120,7 @@ def group_premiums(events: list[Event]) -> list[Event]:
         if len(group) == 1:
             out.append(group[0])
         else:
-            kinds = ", ".join(g.title.removesuffix(" premium due") for g in group)
+            kinds = ", ".join(dict.fromkeys(g.title.removesuffix(" premium due") for g in group))  # no "Dental, Dental"
             out.append(Event(day, "premium", f"Premiums due: {kinds}", f"{len(group)} policies",
                              sum(g.amount or 0 for g in group), None))
     return sorted(out, key=lambda e: (e.when, e.kind, e.title))

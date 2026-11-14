@@ -163,7 +163,7 @@ button,input,textarea{font:inherit;color:inherit}
 /* ---- next 90 days ---- */
 .next90{padding:26px;display:flex;flex-direction:column;gap:16px}
 .next90 .sec-title{margin:0}
-.events{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px 28px}
+.events{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr));gap:14px 28px}
 .events li{display:flex;align-items:center;gap:14px}
 .date{flex:none;width:56px;text-align:center;background:rgba(255,255,255,.12);border:1px solid var(--line);border-radius:14px;padding:6px 0;line-height:1.1}
 .date small{display:block;font-size:11px;font-weight:800;color:var(--lilac);letter-spacing:.06em}.date b{font-size:22px}
@@ -171,7 +171,7 @@ button,input,textarea{font:inherit;color:inherit}
 .total{border-top:1px solid var(--line);padding-top:14px}.total__v{font-size:28px;font-weight:800}.total__v small{font-size:15px;color:var(--muted);font-weight:600}
 
 /* ---- flip cards ---- */
-.flips{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.flips{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(260px,100%),1fr));gap:20px}
 .flip{perspective:1400px;background:none;border:0;padding:0;text-align:left;cursor:pointer;min-height:260px}
 .flip__in{position:relative;display:block;width:100%;height:100%;min-height:260px;transform-style:preserve-3d;transition:transform .9s var(--ease)}
 .flip.is-flipped .flip__in{transform:rotateY(180deg)}
@@ -188,7 +188,7 @@ button,input,textarea{font:inherit;color:inherit}
 
 /* ---- member / policy ---- */
 .memberhead{display:flex;gap:18px;align-items:center}.memberhead h1{font-size:clamp(32px,4vw,44px);font-weight:800}
-.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:18px}
 .pcard{display:flex;flex-direction:column;gap:16px;padding:22px;text-align:left;transition:transform .3s var(--ease)}
 .pcard:hover{transform:translateY(-4px)}
 .pcard__top{display:flex;align-items:center;gap:14px}.pcard__top>span:nth-child(2){flex:1;display:flex;flex-direction:column;line-height:1.3}.pcard__top b{font-size:19px}.pcard small{color:var(--muted);font-size:14px}
@@ -197,7 +197,7 @@ button,input,textarea{font:inherit;color:inherit}
 .pcard--add .pcard__top{color:var(--lilac)}
 .phead{padding:26px;display:flex;flex-direction:column;gap:18px}.phead__t{display:flex;align-items:center;gap:14px}.phead h1{font-size:clamp(24px,3vw,32px);font-weight:800;line-height:1.15}
 .kv{margin:0;display:grid;grid-template-columns:auto 1fr;gap:8px 18px;font-size:15px}.kv dt{color:var(--muted)}.kv dd{margin:0;text-align:right;font-weight:600}
-.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+.facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:14px}
 .fact{padding:18px 20px}
 .fact summary{list-style:none;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;cursor:pointer}
 .fact summary::-webkit-details-marker{display:none}
