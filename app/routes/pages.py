@@ -10,7 +10,7 @@ from sqlmodel import Session, delete, func, select
 
 from app import config
 from app.db import get_session
-from app.models import Chunk, Field, Household, Member, Policy
+from app.models import Chunk, Field, Household, Member, Policy, PolicyMember
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -30,6 +30,19 @@ def _members(session: Session, hh_id: str) -> list[Member]:
 
 def _policies(session: Session, hh_id: str) -> list[Policy]:
     return list(session.exec(select(Policy).where(Policy.household_id == hh_id).order_by(Policy.id)))
+
+
+def covers(session: Session, hh_id: str) -> dict[int, set[int]]:
+    """policy_id -> ids of members it covers. Missing or empty = Shared."""
+    rows = session.exec(
+        select(PolicyMember.policy_id, PolicyMember.member_id)
+        .join(Policy, Policy.id == PolicyMember.policy_id)
+        .where(Policy.household_id == hh_id)
+    )
+    result: dict[int, set[int]] = {}
+    for policy_id, member_id in rows:
+        result.setdefault(policy_id, set()).add(member_id)
+    return result
 
 
 def _verified_counts(session: Session, policies: list[Policy]) -> dict[int, int]:
@@ -55,20 +68,24 @@ def _own_member(session: Session, hh_id: str, member_id: int) -> Member:
 def home(request: Request, session: SessionDep):
     hh = request.state.household
     policies = _policies(session, hh.id)
+    cov = covers(session, hh.id)
     tiles = [
         {"title": m.nickname, "subtitle": m.role.capitalize(), "href": f"/member/{m.id}",
-         "types": [p.type for p in policies if p.member_id == m.id]}
+         "types": [p.type for p in policies if m.id in cov.get(p.id, set())]}
         for m in _members(session, hh.id)
     ]
     tiles.append({"title": "Shared", "subtitle": "House, car, anything joint", "href": "/shared",
-                  "types": [p.type for p in policies if p.member_id is None]})
+                  "types": [p.type for p in policies if not cov.get(p.id)]})
     return render(request, "home.html", tiles=tiles, has_members=len(tiles) > 1)
 
 
 def _policies_page(request: Request, session: SessionDep, member: Member | None) -> HTMLResponse:
     hh = request.state.household
-    member_id = member.id if member else None
-    policies = [p for p in _policies(session, hh.id) if p.member_id == member_id]
+    cov = covers(session, hh.id)
+    if member:
+        policies = [p for p in _policies(session, hh.id) if member.id in cov.get(p.id, set())]
+    else:
+        policies = [p for p in _policies(session, hh.id) if not cov.get(p.id)]
     return render(
         request, "policies.html",
         title=member.nickname if member else "Shared",
@@ -106,19 +123,19 @@ def start_family(session: SessionDep, name: Annotated[str, Form()] = ""):
     return response
 
 
+def _members_context(session: Session, hh_id: str, error: str = "") -> dict:
+    with_policies = set().union(*covers(session, hh_id).values())
+    return {"members": _members(session, hh_id), "with_policies": with_policies, "roles": ROLES, "error": error}
+
+
 def _members_partial(request: Request, session: Session, error: str = "") -> HTMLResponse:
-    hh = request.state.household
-    with_policies = {p.member_id for p in _policies(session, hh.id)}
-    return render(request, "partials/members_list.html", members=_members(session, hh.id),
-                  with_policies=with_policies, roles=ROLES, error=error)
+    return render(request, "partials/members_list.html",
+                  **_members_context(session, request.state.household.id, error))
 
 
 @router.get("/family", response_class=HTMLResponse)
 def family_page(request: Request, session: SessionDep):
-    hh = request.state.household
-    with_policies = {p.member_id for p in _policies(session, hh.id)}
-    return render(request, "family.html", members=_members(session, hh.id),
-                  with_policies=with_policies, roles=ROLES, error="")
+    return render(request, "family.html", **_members_context(session, request.state.household.id))
 
 
 @router.post("/members", response_class=HTMLResponse)
@@ -139,7 +156,7 @@ def add_member(
 @router.delete("/members/{member_id}", response_class=HTMLResponse)
 def remove_member(member_id: int, request: Request, session: SessionDep):
     member = _own_member(session, request.state.household.id, member_id)
-    has_policies = session.exec(select(Policy).where(Policy.member_id == member.id)).first()
+    has_policies = session.exec(select(PolicyMember).where(PolicyMember.member_id == member.id)).first()
     if has_policies:
         return _members_partial(request, session, error=f"Remove {member.nickname}'s policies first.")
     session.delete(member)
@@ -156,6 +173,7 @@ def delete_household(session: Session, hh_id: str) -> None:
     policy_ids = select(Policy.id).where(Policy.household_id == hh_id)
     session.execute(delete(Field).where(Field.policy_id.in_(policy_ids)))
     session.execute(delete(Chunk).where(Chunk.policy_id.in_(policy_ids)))
+    session.execute(delete(PolicyMember).where(PolicyMember.policy_id.in_(policy_ids)))
     session.execute(delete(Policy).where(Policy.household_id == hh_id))
     session.execute(delete(Member).where(Member.household_id == hh_id))
     session.execute(delete(Household).where(Household.id == hh_id))

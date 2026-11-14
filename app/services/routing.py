@@ -1,7 +1,8 @@
 """Situation type -> which of the family's policies apply. A plain dict, not an LLM call.
 
 Asset policies (auto, home) apply whoever owns them.
-Personal policies (health, dental) apply only to the member who was affected.
+Personal policies (health, dental) apply only if they cover the member who was affected
+(`covers` maps policy_id -> member ids, so one family plan can cover several people).
 """
 
 from dataclasses import dataclass, field
@@ -40,7 +41,6 @@ ALWAYS_PERSONAL = {"dental_problem", "illness", "injury"}
 class PolicyLike(Protocol):
     id: int | None
     type: str
-    member_id: int | None
 
 
 @dataclass
@@ -52,6 +52,7 @@ class RoutingResult:
 def route(
     situation: str,
     policies: list[PolicyLike],
+    covers: dict[int, set[int]],
     someone_hurt: bool = False,
     member_id: int | None = None,
 ) -> RoutingResult:
@@ -66,7 +67,8 @@ def route(
             if member_id is None:
                 result.needs_person = True
                 continue
-            matches = [p for p in policies if p.type == policy_type and p.member_id == member_id]
+            matches = [p for p in policies
+                       if p.type == policy_type and member_id in covers.get(p.id, set())]
         else:
             matches = [p for p in policies if p.type == policy_type]
         result.policies.extend(matches)

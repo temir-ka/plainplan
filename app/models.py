@@ -1,7 +1,8 @@
 """Database tables.
 
 Household -> Members (nickname + role only).
-Policy belongs to a Member, or is Shared when member_id is NULL.
+PolicyMember links a Policy to the Members it covers (a family health plan covers several people).
+A Policy with no PolicyMember rows is Shared (house, car, anything jointly owned).
 Chunk = one page of a policy's text. Field = one extracted key value with its verbatim quote.
 """
 
@@ -34,7 +35,6 @@ class Member(SQLModel, table=True):
 class Policy(SQLModel, table=True):
     id: int | None = F(default=None, primary_key=True)
     household_id: str = F(foreign_key="household.id", index=True)
-    member_id: int | None = F(default=None, foreign_key="member.id")  # None = Shared
     type: str  # "health" | "dental" | "auto" | "home"
     insurer: str = ""
     policy_number_last4: str = ""
@@ -44,6 +44,11 @@ class Policy(SQLModel, table=True):
     premium_monthly: float | None = None
     premium_due_day: int | None = None
     created_at: datetime = F(default_factory=_now)
+
+
+class PolicyMember(SQLModel, table=True):
+    policy_id: int = F(foreign_key="policy.id", primary_key=True)
+    member_id: int = F(foreign_key="member.id", primary_key=True, index=True)
 
 
 class Chunk(SQLModel, table=True):

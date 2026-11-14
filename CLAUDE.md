@@ -21,7 +21,8 @@ tests/, samples/ (public PDFs + SOURCES.md + demo_family.json), docs/
 ## Hard rules
 - Guest mode: httpOnly cookie hh_id (uuid4) -> Household. No accounts, no login screens, no fake "logged in" profile.
   First visit opens the demo family; "Start my own family" creates an empty household for this guest.
-- Data model: Household -> Members (nickname, role) ; Policy belongs to a Member OR is shared (member_id NULL = Shared).
+- Data model: Household -> Members (nickname, role) ; PolicyMember links a Policy to the Members it covers
+  (a family health plan covers several people). A Policy with no PolicyMember rows is Shared.
 - One /ask endpoint with scope: household | member:{id} | policy:{id}; scope only filters which chunks BM25 searches.
 - "Something happened?" is a separate flow (/situation), not the ask box.
 - The LLM is called ONLY from app/services/llm.py and ONLY to: (1) extract key fields with verbatim quotes,

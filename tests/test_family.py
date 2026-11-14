@@ -5,7 +5,7 @@ from sqlmodel import Session
 
 from app.db import engine
 from app.main import app
-from app.models import Household, Member, Policy
+from app.models import Household, Member, Policy, PolicyMember
 
 
 def new_client() -> TestClient:
@@ -68,13 +68,38 @@ def test_cannot_open_another_familys_member():
         assert mallory.delete(f"/members/{ava_id}").status_code == 404
 
 
+def add_policy(hh_id: str, type_: str, insurer: str, member_ids_: list[int]) -> None:
+    with Session(engine) as s:
+        policy = Policy(household_id=hh_id, type=type_, insurer=insurer)
+        s.add(policy)
+        s.flush()  # assigns policy.id
+        for m in member_ids_:
+            s.add(PolicyMember(policy_id=policy.id, member_id=m))
+        s.commit()
+
+
+def test_family_plan_shows_on_every_covered_member():
+    with new_client() as client:
+        hh_id = client.cookies["hh_id"]
+        client.post("/members", data={"nickname": "Dad", "role": "parent"})
+        client.post("/members", data={"nickname": "Mom", "role": "parent"})
+        html = client.post("/members", data={"nickname": "Ava", "role": "child"}).text
+        dad_id, mom_id, ava_id = member_ids(html)  # nobody has policies yet, so all are removable
+        add_policy(hh_id, "health", "Aetna", [dad_id, ava_id])
+        add_policy(hh_id, "home", "State Farm", [])
+
+        assert "Aetna" in client.get(f"/member/{dad_id}").text
+        assert "Aetna" in client.get(f"/member/{ava_id}").text
+        assert "Aetna" not in client.get(f"/member/{mom_id}").text
+        shared = client.get("/shared").text
+        assert "State Farm" in shared and "Aetna" not in shared
+
+
 def test_member_with_policies_cannot_be_removed():
     with new_client() as client:
         hh_id = client.cookies["hh_id"]
         [dad_id] = member_ids(client.post("/members", data={"nickname": "Dad", "role": "parent"}).text)
-        with Session(engine) as s:
-            s.add(Policy(household_id=hh_id, member_id=dad_id, type="health", insurer="Aetna"))
-            s.commit()
+        add_policy(hh_id, "health", "Aetna", [dad_id])
         html = client.delete(f"/members/{dad_id}").text
         assert "Remove Dad&#39;s policies first" in html
         assert "Aetna" in client.get(f"/member/{dad_id}").text
@@ -84,9 +109,12 @@ def test_member_with_policies_cannot_be_removed():
 def test_delete_data_removes_everything():
     with new_client() as client:
         hh_id = client.cookies["hh_id"]
-        client.post("/members", data={"nickname": "Mom", "role": "parent"})
+        [mom_id] = member_ids(client.post("/members", data={"nickname": "Mom", "role": "parent"}).text)
+        add_policy(hh_id, "health", "Aetna", [mom_id])
         client.post("/delete-data")
         with Session(engine) as s:
             assert s.get(Household, hh_id) is None
             assert s.query(Member).filter(Member.household_id == hh_id).count() == 0
+            assert s.query(Policy).filter(Policy.household_id == hh_id).count() == 0
+            assert s.query(PolicyMember).filter(PolicyMember.member_id == mom_id).count() == 0
         assert client.cookies.get("hh_id") != hh_id
