@@ -1,0 +1,27 @@
+{# needs: status, label, answer, quotes, refusal, policy #}
+{% set pill = {"covered": "bg-emerald-100 text-emerald-800", "not_covered": "bg-rose-100 text-rose-800",
+               "unclear": "bg-slate-200 text-slate-700"}[status] %}
+<div class="rounded-xl bg-white border border-slate-200 p-4 space-y-3 text-sm">
+  <span class="inline-block rounded-full px-3 py-1 text-xs font-semibold {{ pill }}">{{ label }}</span>
+
+  {% if refusal %}
+    <p>{{ refusal }}
+      {% if policy and policy.claims_phone %}
+        Call {{ policy.insurer or "your insurer" }}:
+        <a href="tel:{{ policy.claims_phone }}" class="underline font-medium">{{ policy.claims_phone }}</a>.
+      {% elif policy %}
+        Call {{ policy.insurer or "your insurer" }} — the number is on your card or policy.
+      {% endif %}
+    </p>
+  {% else %}
+    <p>{{ answer }}</p>
+    <ul class="space-y-2">
+      {% for q in quotes %}
+        <li class="border-l-2 border-emerald-300 pl-2 text-xs text-slate-600">
+          <span class="font-medium text-slate-800">{{ q.label }} · p. {{ q.page }}</span> · “{{ q.text }}”
+        </li>
+      {% endfor %}
+    </ul>
+    <p class="text-xs text-emerald-700">✓ Every quote was checked against your document.</p>
+  {% endif %}
+</div>
