@@ -6,9 +6,10 @@ Web only (PWA ok), no login. All product copy is in English. Screens and UX (sou
 
 ## Stack
 - One FastAPI app serves everything: Jinja2 templates + HTMX + Tailwind (CDN). No React, no separate frontend, no CORS.
-- SQLModel; DATABASE_URL from env (Neon Postgres in prod, sqlite:///local.db locally).
+- SQLModel; DATABASE_URL from env (sqlite in a Docker volume in prod, sqlite:///local.db locally; Postgres works by changing the URL).
 - pdfplumber (page-level chunks), rank_bm25, anthropic SDK, stripe (test mode). .ics written by hand.
-- Deploy: Render web service from main. Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+- Deploy: own server, `docker compose up -d --build` (Dockerfile + docker-compose.yml), DB file in volume /data.
+  HTTPS (Caddy + sslip.io) is added last. render.yaml is a fallback. Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ## Repo layout
 app/main.py, app/config.py, app/db.py, app/models.py
