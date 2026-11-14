@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+jinja2
+python-multipart
+sqlmodel
+psycopg[binary]
+pdfplumber
+rank-bm25
+anthropic
+stripe
+python-dotenv
+pytest
+httpx
