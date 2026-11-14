@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1 class="text-2xl font-semibold">{{ household.name }}</h1>
+  <p class="text-sm text-slate-600">Add everyone your policies cover. Nickname and role only, nothing else.</p>
+  {% include "partials/members_list.html" %}
+  <p class="text-sm text-slate-500">The Shared tile (house, car, anything joint) is always there.</p>
+  <a href="/" class="block w-full rounded-lg bg-slate-900 text-white text-center py-2">Done</a>
+{% endblock %}

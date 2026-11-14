@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1 class="text-2xl font-semibold">Delete my family data</h1>
+  <p class="text-sm text-slate-600">This removes your family members, policies and all text we stored from your
+    documents. It cannot be undone.</p>
+  <form method="post" action="/delete-data" onsubmit="return confirm('Delete all your family data?')">
+    <button class="w-full rounded-lg bg-red-600 text-white py-2">Delete everything</button>
+  </form>
+{% endblock %}

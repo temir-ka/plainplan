@@ -5,7 +5,7 @@ Policy belongs to a Member, or is Shared when member_id is NULL.
 Chunk = one page of a policy's text. Field = one extracted key value with its verbatim quote.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlmodel import Field as F
 from sqlmodel import SQLModel
@@ -28,7 +28,7 @@ class Member(SQLModel, table=True):
     id: int | None = F(default=None, primary_key=True)
     household_id: str = F(foreign_key="household.id", index=True)
     nickname: str
-    role: str  # "Parent" | "Child"
+    role: str  # "parent" | "child"
 
 
 class Policy(SQLModel, table=True):
@@ -39,6 +39,10 @@ class Policy(SQLModel, table=True):
     insurer: str = ""
     policy_number_last4: str = ""
     claims_phone: str = ""
+    period_start: date | None = None
+    period_end: date | None = None
+    premium_monthly: float | None = None
+    premium_due_day: int | None = None
     created_at: datetime = F(default_factory=_now)
 
 

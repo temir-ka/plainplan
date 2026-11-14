@@ -10,18 +10,19 @@
 </head>
 <body class="min-h-screen flex flex-col bg-slate-50 text-slate-900">
   <header class="bg-white border-b border-slate-200">
-    <div class="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+    <div class="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between gap-3">
       <a href="/" class="font-bold text-lg tracking-tight">Plainplan</a>
-      <div class="flex items-center gap-2 text-sm">
-        <span class="font-medium">{{ household.name }}</span>
+      <div class="flex items-center gap-2 text-sm min-w-0">
+        <a href="/family" class="font-medium truncate">{{ household.name }}</a>
         {% if household.is_demo %}
           <span class="rounded-full bg-amber-100 text-amber-800 px-2 py-0.5 text-xs">Demo</span>
+          <a href="/start" class="rounded-lg bg-slate-900 text-white px-3 py-1.5 text-xs whitespace-nowrap">Start my own family</a>
         {% endif %}
       </div>
     </div>
   </header>
 
-  <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-6">
+  <main class="flex-1 max-w-2xl w-full mx-auto px-4 py-6 space-y-6">
     {% block content %}{% endblock %}
   </main>
 
@@ -29,6 +30,7 @@
     <div class="max-w-2xl mx-auto px-4 py-4 text-xs text-slate-500 space-y-2">
       <p>Plainplan explains your own policy documents. It is not insurance, legal, or medical advice and does not
         sell insurance. Your insurer makes the final decision on any claim.</p>
+      <a href="/settings" class="underline">Delete my family data</a>
     </div>
   </footer>
 </body>

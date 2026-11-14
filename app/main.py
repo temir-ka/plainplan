@@ -10,7 +10,7 @@ from sqlmodel import Session
 from app import config
 from app.db import create_tables, engine
 from app.models import Household
-from app.routes import pages
+from app.routes import ask, pages, situation
 
 
 @asynccontextmanager
@@ -47,7 +47,10 @@ async def guest_household(request: Request, call_next):
     household, is_new = _get_or_create_household(request.cookies.get(config.COOKIE_NAME))
     request.state.household = household
     response = await call_next(request)
-    if is_new:
+    route_set_cookie = any(
+        h.startswith(f"{config.COOKIE_NAME}=") for h in response.headers.getlist("set-cookie")
+    )
+    if is_new and not route_set_cookie:  # /start and /delete-data set the cookie themselves
         response.set_cookie(
             config.COOKIE_NAME,
             household.id,
@@ -65,3 +68,5 @@ def health() -> dict:
 
 
 app.include_router(pages.router)
+app.include_router(ask.router)
+app.include_router(situation.router)

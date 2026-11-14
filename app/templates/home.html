@@ -1,5 +1,37 @@
 {% extends "base.html" %}
 {% block content %}
-  <h1 class="text-2xl font-semibold">Every policy your family has, in one place.</h1>
-  <p class="mt-2 text-slate-600">Placeholder home page. Family tiles, the ask box and "Something happened?" come next.</p>
+  <a href="/situation"
+     class="block w-full rounded-2xl bg-red-600 text-white text-center text-lg font-semibold py-4 shadow">
+    Something happened?
+  </a>
+
+  {% with ask_label="Ask about your family's policies", ask_scope="household" %}
+    {% include "partials/ask_box.html" %}
+  {% endwith %}
+
+  <section class="space-y-3">
+    <div class="flex items-center justify-between">
+      <h2 class="font-semibold">Your family</h2>
+      <a href="/family" class="text-sm underline">Edit</a>
+    </div>
+    {% if not has_members %}
+      <a href="/family" class="block rounded-xl border-2 border-dashed border-slate-300 p-4 text-center text-sm">
+        + Add your family members
+      </a>
+    {% endif %}
+    <div class="grid grid-cols-2 gap-3">
+      {% for tile in tiles %}
+        <a href="{{ tile.href }}" class="rounded-xl bg-white border border-slate-200 p-4 space-y-1">
+          <div class="font-medium">{{ tile.title }}</div>
+          <div class="text-xs text-slate-500">{{ tile.subtitle }}</div>
+          <div class="text-lg h-7">{% for t in tile.types %}{{ ICONS[t] }}{% endfor %}</div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="rounded-xl bg-white border border-slate-200 p-4 text-sm space-y-1">
+    <h2 class="font-semibold">How it works</h2>
+    <p>AI reads your policy &rarr; our code checks every quote &rarr; no quote, no answer.</p>
+  </section>
 {% endblock %}

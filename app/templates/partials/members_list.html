@@ -1,0 +1,25 @@
+{# HTMX swaps this whole block after add/remove. needs: members, with_policies, roles, error #}
+<section id="members" class="space-y-3">
+  <ul class="space-y-2">
+    {% for m in members %}
+      <li class="flex items-center justify-between rounded-xl bg-white border border-slate-200 px-4 py-3">
+        <span><span class="font-medium">{{ m.nickname }}</span>
+          <span class="text-xs text-slate-500">· {{ m.role.capitalize() }}</span></span>
+        {% if m.id not in with_policies %}
+          <button hx-delete="/members/{{ m.id }}" hx-target="#members" hx-swap="outerHTML"
+                  class="text-xs text-slate-500 underline">Remove</button>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <form hx-post="/members" hx-target="#members" hx-swap="outerHTML" class="flex gap-2">
+    <input name="nickname" required maxlength="30" placeholder="Nickname, e.g. Mom"
+           class="flex-1 min-w-0 rounded-lg border border-slate-300 px-3 py-2 text-sm">
+    <select name="role" class="rounded-lg border border-slate-300 px-2 py-2 text-sm">
+      {% for r in roles %}<option value="{{ r }}">{{ r.capitalize() }}</option>{% endfor %}
+    </select>
+    <button class="rounded-lg bg-slate-900 text-white px-4 py-2 text-sm">Add</button>
+  </form>
+  {% if error %}<p class="text-sm text-red-600">{{ error }}</p>{% endif %}
+</section>
