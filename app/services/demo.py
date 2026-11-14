@@ -79,7 +79,9 @@ def warm_cache() -> None:
 
     def one(entry: dict) -> None:
         with Session(engine) as session:
-            read_and_extract(session, _pdf(entry), entry["type"])
+            _, extraction = read_and_extract(session, _pdf(entry), entry["type"])
+        if extraction is None:
+            raise RuntimeError("LLM extraction failed (check ANTHROPIC_API_KEY); not cached, will retry on restart")
 
     with ThreadPoolExecutor(max_workers=2) as pool:  # 2 at a time: keeps memory low on a 1 GB server
         for entry, result in zip(data["policies"], pool.map(lambda e: _safe(one, e), data["policies"])):
