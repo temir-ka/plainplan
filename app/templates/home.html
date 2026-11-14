@@ -62,7 +62,8 @@
     {% endif %}
 
     <section aria-labelledby="fam" class="reveal-group">
-      <div class="between"><h2 id="fam" class="hd sec-title">Your family</h2><a class="linkbtn" href="/family">Edit family</a></div>
+      <div class="between"><h2 id="fam" class="hd sec-title">Your family</h2>
+        {% if household.is_demo %}<a class="linkbtn" href="/start">Start my own family</a>{% else %}<a class="linkbtn" href="/family">Edit family</a>{% endif %}</div>
       <div class="tiles">
         {% for m in members %}
         <a class="tile tile--{{ tone(m) }} reveal" style="--d:{{ loop.index0 * 0.12 }}s" href="/member/{{ m.id }}">
@@ -105,6 +106,7 @@
       <span class="badge badge--light">FOR JUDGES</span>
       <h2 id="j-t" class="hd">Try the full flow in 3 minutes</h2>
       <p class="muted">No sign-up. Real public sample policies go through the real product logic: the AI reads, our code verifies.</p>
+      <p class="muted small">Demo family: names, dates and premiums are made up. Policy texts are public sample documents; the auto policy is a fictional sample.</p>
       <ol>
         <li>Ask: "Are Ava's braces covered?" Tap the quote: it is word for word from the plan.</li>
         <li>Ask something that is not in the policy and see the honest refusal.</li>

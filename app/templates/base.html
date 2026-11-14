@@ -42,17 +42,11 @@
     </nav>
     <div class="topbar__right">
       <a class="household" href="/family" title="Your household">{{ household.name }}{% if household.is_demo %}<span class="badge">DEMO</span>{% endif %}</a>
+      {% if household.is_demo %}<a class="btn btn--ghost btn--sm wide-only" href="/start">Start my own family</a>{% endif %}
       <a class="btn btn--primary btn--sos" href="/situation">{{ icon('shield', 20) }}<span>Something happened?</span></a>
     </div>
   </div>
 </header>
-
-{% if household.is_demo %}
-<div class="container"><div class="demo-strip glass">
-  <span>Demo family: names, dates and premiums are made up. Policy texts are public sample documents; the auto policy is a fictional sample.</span>
-  <a class="btn btn--ghost btn--sm" href="/start">Start my own family</a>
-</div></div>
-{% endif %}
 
 <div class="sos-bar"><a class="btn btn--primary btn--block" href="/situation">{{ icon('shield', 22) }}<span>Something happened?</span></a></div>
 
