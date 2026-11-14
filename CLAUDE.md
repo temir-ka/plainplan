@@ -9,7 +9,7 @@ Web only (PWA ok), no login. All product copy is in English. Screens and UX (sou
 - SQLModel; DATABASE_URL from env (sqlite in a Docker volume in prod, sqlite:///local.db locally).
 - pdfplumber (page-level chunks), rank_bm25, anthropic SDK. No payments (pricing page only). .ics written by hand.
 - Deploy: own server, `docker compose up -d --build` (Dockerfile + docker-compose.yml), DB file in volume /data.
-  HTTPS (Caddy + sslip.io) is added last. Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+  HTTPS: Caddy service in docker-compose (Caddyfile, DOMAIN=<ip-with-dashes>.sslip.io in .env). Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ## Repo layout
 app/main.py, app/config.py, app/db.py, app/models.py

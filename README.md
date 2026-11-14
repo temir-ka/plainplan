@@ -35,10 +35,12 @@ docker run --rm -p 8000:8000 --env-file .env plainplan
 ```bash
 git clone <repo> plainplan && cd plainplan
 cp .env.example .env && nano .env   # real keys, server only
-docker compose up -d --build        # http://<server-ip>:8000
+docker compose up -d --build        # https://<DOMAIN>
 ```
 
 The SQLite file lives in the Docker volume `plainplan-data`, so it survives rebuilds.
+HTTPS: the `caddy` service gets a free Let's Encrypt certificate for `DOMAIN` (e.g. `1-2-3-4.sslip.io`,
+which points to IP 1.2.3.4 with no DNS setup). Ports 80 and 443 must be open; the app port is bound to localhost.
 Update: `git pull && docker compose up -d --build`.
 All secrets come from environment variables. Never commit `.env`.
 

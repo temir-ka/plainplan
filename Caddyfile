@@ -1,0 +1,6 @@
+# HTTPS in front of the app. Caddy gets and renews a free Let's Encrypt certificate by itself.
+# DOMAIN comes from .env, e.g. 206-81-28-155.sslip.io (sslip.io maps that name to the IP, no DNS setup needed).
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy web:8000
+}
