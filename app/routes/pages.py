@@ -18,6 +18,13 @@ templates.env.globals["ICONS"] = {"health": "🩺", "dental": "🦷", "auto": "�
 
 SessionDep = Annotated[Session, Depends(get_session)]
 ROLES = ("parent", "child")
+POLICY_TYPES = ("health", "dental", "auto", "home")
+UPLOAD_ERRORS = {
+    "type": "Pick a policy type.",
+    "notpdf": "That file is not a PDF we can read.",
+    "big": "That PDF is larger than 15 MB.",
+    "scan": "This looks like a scan; please upload a text PDF.",
+}
 
 
 def render(request: Request, name: str, **context) -> HTMLResponse:
@@ -94,6 +101,10 @@ def _policies_page(request: Request, session: SessionDep, member: Member | None)
         ask_scope=f"member:{member.id}" if member else "shared",
         policies=policies,
         verified=_verified_counts(session, policies),
+        members=_members(session, hh.id),
+        preselected=member.id if member else None,
+        policy_types=POLICY_TYPES,
+        error=UPLOAD_ERRORS.get(request.query_params.get("error", ""), ""),
     )
 
 

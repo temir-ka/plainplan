@@ -55,6 +55,7 @@ class Chunk(SQLModel, table=True):
     id: int | None = F(default=None, primary_key=True)
     policy_id: int = F(foreign_key="policy.id", index=True)
     page: int
+    section: str = ""  # nearest heading above the chunk
     text: str
 
 

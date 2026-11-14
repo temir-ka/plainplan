@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}{{ policy.insurer or policy.type.capitalize() }} · Plainplan{% endblock %}
+{% block content %}
+  <div>
+    <a href="/" class="text-sm underline">&larr; Family</a>
+    <h1 class="mt-2 text-2xl font-semibold">{{ ICONS[policy.type] }} {{ policy.insurer or policy.type.capitalize() }}</h1>
+    <p class="text-sm text-slate-500">{{ policy.type.capitalize() }} · covers {{ covered }} · {{ pages }} pages read</p>
+    {% if policy.policy_number_last4 %}<p class="text-sm">Policy ••••{{ policy.policy_number_last4 }}</p>{% endif %}
+    {% if policy.claims_phone %}
+      <a href="tel:{{ policy.claims_phone }}" class="mt-2 inline-block rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-sm">
+        Call claims: {{ policy.claims_phone }}</a>
+    {% endif %}
+  </div>
+
+  <section class="rounded-xl bg-white border border-slate-200 p-4 space-y-2">
+    <h2 class="font-semibold">Key fields</h2>
+    {% for f in fields %}
+      <div class="flex justify-between gap-3 text-sm">
+        <span class="text-slate-600">{{ f.name.replace("_", " ").capitalize() }}</span>
+        <span class="text-right">{{ f.value }}
+          {% if f.verified %}<span class="text-emerald-700">✓ verified</span>{% endif %}</span>
+      </div>
+    {% else %}
+      <p class="text-sm text-slate-500">Key fields will appear here after the AI reads the document.</p>
+    {% endfor %}
+  </section>
+
+  {% include "partials/ask_box.html" %}
+{% endblock %}

@@ -21,10 +21,30 @@
       </a>
     {% endfor %}
 
-    <div class="rounded-xl border-2 border-dashed border-slate-300 p-4 text-sm space-y-1">
+    <form method="post" action="/policies" enctype="multipart/form-data"
+          class="rounded-xl border-2 border-dashed border-slate-300 p-4 text-sm space-y-3">
       <div class="font-medium">+ Add policy</div>
-      <p class="text-slate-500">PDF upload comes next.</p>
-    </div>
+      {% if error %}<p class="text-red-600">{{ error }}</p>{% endif %}
+      <input type="file" name="file" accept="application/pdf,.pdf" required class="block w-full text-sm">
+      <select name="type" required class="w-full rounded-lg border border-slate-300 px-2 py-2">
+        <option value="">Policy type…</option>
+        {% for t in policy_types %}<option value="{{ t }}">{{ ICONS[t] }} {{ t.capitalize() }}</option>{% endfor %}
+      </select>
+      {% if members %}
+        <fieldset class="space-y-1">
+          <legend class="text-slate-600">Who does it cover? Leave empty for Shared.</legend>
+          {% for m in members %}
+            <label class="mr-3 inline-flex items-center gap-1">
+              <input type="checkbox" name="member_ids" value="{{ m.id }}" {% if m.id == preselected %}checked{% endif %}>
+              {{ m.nickname }}
+            </label>
+          {% endfor %}
+        </fieldset>
+      {% endif %}
+      <p class="text-xs text-slate-500">We read your PDF once, keep the text to quote it, and delete the file.
+        Text is processed by an AI provider. Don't upload ID cards.</p>
+      <button class="w-full rounded-lg bg-slate-900 text-white py-2">Upload</button>
+    </form>
   </section>
 
   {% include "partials/ask_box.html" %}

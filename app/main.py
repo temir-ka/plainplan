@@ -10,7 +10,7 @@ from sqlmodel import Session
 from app import config
 from app.db import create_tables, engine
 from app.models import Household
-from app.routes import ask, pages, situation
+from app.routes import ask, pages, policies, situation
 
 
 @asynccontextmanager
@@ -68,5 +68,6 @@ def health() -> dict:
 
 
 app.include_router(pages.router)
+app.include_router(policies.router)
 app.include_router(ask.router)
 app.include_router(situation.router)

@@ -1,1 +1,104 @@
-"""Policy pages, upload, add policy. Not implemented yet."""
+"""Add a policy (PDF upload) and the policy page.
+
+The uploaded file lives only in a temp file while we extract text, then it is deleted.
+"""
+
+import os
+import tempfile
+from pathlib import Path
+from typing import Annotated
+
+from fastapi import APIRouter, Form, HTTPException, Request, UploadFile
+from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlmodel import Session, select
+
+from app.models import Chunk, Field, Member, Policy, PolicyMember
+from app.routes.pages import POLICY_TYPES, SessionDep, covers, render
+from app.services.pdf import ScannedPdfError, read_policy_pdf
+
+router = APIRouter()
+
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+
+
+def _save_to_temp(upload: UploadFile) -> Path:
+    fd, name = tempfile.mkstemp(suffix=".pdf")
+    size = 0
+    with os.fdopen(fd, "wb") as out:
+        while block := upload.file.read(1024 * 1024):
+            size += len(block)
+            if size > MAX_UPLOAD_BYTES:
+                out.close()
+                os.unlink(name)
+                raise ValueError("big")
+            out.write(block)
+    return Path(name)
+
+
+def _back_url(member_ids: list[int], error: str) -> str:
+    page = f"/member/{member_ids[0]}" if len(member_ids) == 1 else "/shared" if not member_ids else "/"
+    return f"{page}?error={error}"
+
+
+@router.post("/policies")
+def add_policy(
+    request: Request,
+    session: SessionDep,
+    file: UploadFile,
+    type: Annotated[str, Form()] = "",
+    member_ids: Annotated[list[int], Form()] = [],
+):
+    hh_id = request.state.household.id
+    own_ids = {m.id for m in session.exec(select(Member).where(Member.household_id == hh_id))}
+    member_ids = [m for m in member_ids if m in own_ids]  # ignore ids from other families
+    if type not in POLICY_TYPES:
+        return RedirectResponse(_back_url(member_ids, "type"), status_code=303)
+
+    try:
+        path = _save_to_temp(file)
+    except ValueError:
+        return RedirectResponse(_back_url(member_ids, "big"), status_code=303)
+    try:
+        if path.read_bytes()[:5] != b"%PDF-":
+            return RedirectResponse(_back_url(member_ids, "notpdf"), status_code=303)
+        chunks = read_policy_pdf(path)
+    except ScannedPdfError:
+        return RedirectResponse(_back_url(member_ids, "scan"), status_code=303)
+    except Exception:  # broken or encrypted PDF
+        return RedirectResponse(_back_url(member_ids, "notpdf"), status_code=303)
+    finally:
+        path.unlink(missing_ok=True)  # never keep the original file
+
+    policy = Policy(household_id=hh_id, type=type)
+    session.add(policy)
+    session.flush()
+    session.add_all(PolicyMember(policy_id=policy.id, member_id=m) for m in member_ids)
+    session.add_all(Chunk(policy_id=policy.id, page=c.page, section=c.section, text=c.text) for c in chunks)
+    session.commit()
+    return RedirectResponse(f"/policy/{policy.id}", status_code=303)
+
+
+def own_policy(session: Session, hh_id: str, policy_id: int) -> Policy:
+    policy = session.get(Policy, policy_id)
+    if not policy or policy.household_id != hh_id:
+        raise HTTPException(404)
+    return policy
+
+
+@router.get("/policy/{policy_id}", response_class=HTMLResponse)
+def policy_page(policy_id: int, request: Request, session: SessionDep):
+    hh_id = request.state.household.id
+    policy = own_policy(session, hh_id, policy_id)
+    member_ids = covers(session, hh_id).get(policy.id, set())
+    names = [m.nickname for m in session.exec(select(Member).where(Member.id.in_(member_ids)))]
+    chunks = list(session.exec(select(Chunk).where(Chunk.policy_id == policy.id)))
+    fields = list(session.exec(select(Field).where(Field.policy_id == policy.id)))
+    return render(
+        request, "policy.html",
+        policy=policy,
+        covered=", ".join(names) or "Shared",
+        pages=max((c.page for c in chunks), default=0),
+        fields=fields,
+        ask_label="Ask about this policy",
+        ask_scope=f"policy:{policy.id}",
+    )
