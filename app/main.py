@@ -1,5 +1,6 @@
 """FastAPI entry point: app, guest-cookie middleware, routers, static files."""
 
+import logging
 import threading
 import uuid
 from contextlib import asynccontextmanager
@@ -14,6 +15,8 @@ from app.db import create_tables, engine
 from app.models import Household
 from app.routes import ask, calendar, pages, policies, situation
 from app.services import demo
+
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
 
 
 @asynccontextmanager
