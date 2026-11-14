@@ -31,7 +31,8 @@
   <ol class="steps">
     {% for s in p.steps %}
     <li class="reveal in" style="--d:{{ loop.index0 * 0.12 }}s"><span class="steps__n hd">{{ loop.index }}</span><div><b class="hd">{{ s.text }}</b>{{ quote(s.quote, p.label, s.page) }}
-      {% if s.deadline %}<span class="chip chip--warn">{{ icon('cal', 14) }}Your policy says “{{ s.deadline }}”</span>{% endif %}</div></li>
+      {% if s.deadline %}<span class="chip chip--warn">{{ icon('cal', 14) }}Your policy says “{{ s.deadline }}”</span>
+        <a class="btn btn--ghost btn--sm" href="/calendar/deadline.ics?policy_id={{ p.policy.id }}&days={{ s.deadline_days }}&what={{ s.text|urlencode }}" download data-ics>{{ icon('cal', 16) }}<span>Add deadline (.ics)</span></a>{% endif %}</div></li>
     {% endfor %}
   </ol>
   {% else %}

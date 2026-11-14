@@ -19,7 +19,7 @@ from app.routes.ask import policy_label
 from app.routes.pages import SessionDep, covers, render
 from app.services import llm, redflags, routing, search
 from app.services.citations import numbers_in, quote_in_chunk
-from app.services.deadlines import find_deadline
+from app.services.deadlines import deadline_days, find_deadline
 
 router = APIRouter()
 
@@ -46,6 +46,7 @@ class ShownStep:
     page: int
     quote: str
     deadline: str
+    deadline_days: int | None = None
 
 
 @dataclass
@@ -70,7 +71,7 @@ def verified_steps(result: llm.Steps | None, chunks: list[Chunk]) -> list[ShownS
         chunk = by_id.get(s.chunk_id)
         if (chunk and len(s.quote.strip()) >= MIN_STEP_QUOTE_CHARS and quote_in_chunk(s.quote, chunk.text)
                 and numbers_in(s.text) <= numbers_in(s.quote)):
-            shown.append(ShownStep(s.text, chunk.page, s.quote, find_deadline(s.quote)))
+            shown.append(ShownStep(s.text, chunk.page, s.quote, find_deadline(s.quote), deadline_days(s.quote)))
     return shown[:4]
 
 

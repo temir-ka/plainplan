@@ -12,7 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from app import config
 from app.db import create_tables, engine
 from app.models import Household
-from app.routes import ask, pages, policies, situation
+from app.routes import ask, calendar, pages, policies, situation
 from app.services import demo
 
 
@@ -89,3 +89,4 @@ app.include_router(pages.router)
 app.include_router(policies.router)
 app.include_router(ask.router)
 app.include_router(situation.router)
+app.include_router(calendar.router)

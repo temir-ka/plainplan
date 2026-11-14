@@ -83,6 +83,23 @@
       </div>
     </section>
 
+    {% if events or monthly %}
+    <section aria-labelledby="n90" class="next90 glass glass--teal reveal">
+      <div class="between"><h2 id="n90" class="hd sec-title sec-title--sm">Next 90 days</h2>{% if household.is_demo %}<span class="muted small">Demo dates · entered by user</span>{% endif %}</div>
+      {% if events %}
+      <ul class="events">
+        {% for e in events %}
+        <li class="reveal" style="--d:{{ loop.index0 * 0.06 }}s"><span class="date hd"><small>{{ e.when.strftime("%b")|upper }}</small><b>{{ e.when.day }}</b></span>
+          <span class="events__t"><b>{{ e.title }}{% if e.status == 'soon' %} <span class="chip chip--warn">Soon</span>{% endif %}</b><small>{{ e.sub }}</small></span>
+          {% if e.amount %}<b class="hd">${{ "{:,.0f}".format(e.amount) }}</b>{% endif %}</li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="muted">Nothing due in the next 90 days.</p>{% endif %}
+      {% if monthly %}<div class="between total"><span class="muted">Your family pays</span><span class="hd total__v">${{ "{:,.0f}".format(monthly) }}<small> / month · ${{ "{:,.0f}".format(monthly * 12) }} / year</small></span></div>{% endif %}
+      <a class="btn btn--ghost btn--block" href="/calendar.ics" download data-ics>{{ icon('cal', 18) }}<span>Add all to calendar (.ics)</span></a>
+    </section>
+    {% endif %}
+
     <section id="how" aria-labelledby="how-t" class="reveal-group">
       <h2 id="how-t" class="hd sec-title">How it works</h2>
       <div class="flips">

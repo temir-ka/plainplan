@@ -11,6 +11,7 @@ from sqlmodel import Session, delete, func, select
 from app import config
 from app.db import get_session
 from app.glass import stained_glass
+from app.services import deadlines
 from app.models import Chunk, Field, Household, Member, Policy, PolicyMember
 
 router = APIRouter()
@@ -92,7 +93,14 @@ def home(request: Request, session: SessionDep):
     shared_types = [p.type for p in policies if not cov.get(p.id)]
     ava = next((m for m in members if m.nickname.lower() == "ava"), None)
     return render(request, "home.html", members=members, types_of=types_of, shared_types=shared_types,
-                  example=_how_it_works_example(session, policies), ava=ava)
+                  example=_how_it_works_example(session, policies), ava=ava,
+                  events=deadlines.group_premiums(deadlines.next_events(policies, owners=_owner_names(members, policies, cov))),
+                  monthly=deadlines.monthly_total(policies))
+
+
+def _owner_names(members: list[Member], policies: list[Policy], cov: dict[int, set[int]]) -> dict[int, str]:
+    nick = {m.id: m.nickname for m in members}
+    return {p.id: ", ".join(nick[i] for i in sorted(cov.get(p.id, set())) if i in nick) or "Shared" for p in policies}
 
 
 def _how_it_works_example(session: Session, policies: list[Policy]) -> dict | None:
