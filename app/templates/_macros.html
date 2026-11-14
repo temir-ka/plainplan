@@ -79,7 +79,7 @@
     <label class="ask__label hd" for="{{ id }}-q">{{ bot(34) }}<span>{{ title }}</span></label>
     <div class="ask__row">
       <input id="{{ id }}-q" class="input" name="q" type="text" autocomplete="off" maxlength="300" placeholder="{{ placeholder }}" required>
-      <button class="btn btn--dark" type="submit">Ask</button>
+      <button class="btn btn--dark" type="submit" data-busy="Reading…">Ask</button>
     </div>
     {% if chips %}<div class="chips">{% for c in chips %}<button type="button" class="chip" data-fill="#{{ id }}-q" data-text="{{ c }}" data-submit>{{ c }}</button>{% endfor %}</div>{% endif %}
     {% if note %}<p class="muted small">{{ note }}</p>{% endif %}

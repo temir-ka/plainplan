@@ -81,9 +81,11 @@ def ask(request: Request, session: SessionDep, q: Annotated[str, Form()] = "",
     by_policy = {p.id: p for p in policies}
     chunks = list(session.exec(select(Chunk).where(Chunk.policy_id.in_(by_policy))))
     found = search.search(chunks, question)
-    top_policy = by_policy[found[0].policy_id] if found else policies[0]
-    if not found:
-        return _refusal(request, top_policy, "I couldn't find this in your documents.", question)
+    if not found:  # name an insurer only if the question clearly points to one kind of policy
+        only_one_kind = len({p.type for p in policies}) == 1
+        return _refusal(request, policies[0] if only_one_kind else None,
+                        "I couldn't find this in your documents.", question)
+    top_policy = by_policy[found[0].policy_id]
 
     notes = _policy_notes(session, hh.id, by_policy)
     texts = {c.id: c.text for c in found}
@@ -92,10 +94,13 @@ def ask(request: Request, session: SessionDep, q: Annotated[str, Form()] = "",
     if result is None:
         return _refusal(request, top_policy, "I couldn't check your documents right now.", question)
 
+    if result.status == "off_topic":
+        return _refusal(request, None, "I can only answer questions about your family's policies.", question)
+
     check = _verify(result, texts)
-    if result.status != "unclear" and not check.ok:  # one retry, telling the LLM exactly what failed
+    if result.status in ("covered", "not_covered") and not check.ok:  # one retry, telling the LLM exactly what failed
         retry = llm.answer_question(question, found, notes, feedback=_why_rejected(result, check))
-        if retry is not None:
+        if retry is not None and retry.status != "off_topic":
             result, check = retry, _verify(retry, texts)
 
     chunk_by_id = {c.id: c for c in found}

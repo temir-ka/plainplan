@@ -11,11 +11,11 @@
       <label class="sr" for="sit-text">What happened</label>
       <textarea id="sit-text" class="input input--area" name="text" required maxlength="500" placeholder="e.g. Someone rear-ended our car and Dad's neck hurts"></textarea>
       <div class="chips">
-        <button type="button" class="chip" data-fill="#sit-text" data-text="Someone rear-ended our car and Dad's neck hurts">Rear-ended, Dad's neck hurts</button>
-        <button type="button" class="chip" data-fill="#sit-text" data-text="A pipe burst and flooded the kitchen">Pipe burst in the kitchen</button>
-        <button type="button" class="chip" data-fill="#sit-text" data-text="Leo fell off his bike and hurt his wrist">Leo hurt his wrist</button>
+        <button type="button" class="chip" data-fill="#sit-text" data-text="Our car was rear-ended and Dad's neck hurts">Our car was rear-ended and Dad's neck hurts</button>
+        <button type="button" class="chip" data-fill="#sit-text" data-text="A pipe burst and flooded the kitchen">A pipe burst and flooded the kitchen</button>
+        <button type="button" class="chip" data-fill="#sit-text" data-text="Leo fell off his bike and hurt his wrist">Leo fell off his bike and hurt his wrist</button>
       </div>
-      <button class="btn btn--primary btn--lg" type="submit">Find my policies</button>
+      <button class="btn btn--primary btn--lg" type="submit" data-busy="Checking your policies…">Find my policies</button>
     </form>
   </section>
   <p id="sit-wait" class="htmx-indicator loading">{{ bot(28) }}Checking your family's policies…</p>

@@ -54,7 +54,7 @@
     <label class="drop" for="pdf">{{ icon('upload', 28) }}<b class="hd">Choose a PDF</b><span class="muted small" data-file-name>Policy or summary of benefits</span></label>
     <input id="pdf" class="sr" type="file" name="file" accept="application/pdf,.pdf" required>
     <p class="muted small">We read your PDF once, keep the text to quote it, and delete the file. Text is processed by an AI provider. Don't upload ID cards.</p>
-    <button class="btn btn--primary btn--block" type="submit">Read my policy</button>
+    <button class="btn btn--primary btn--block" type="submit" data-busy="Reading your policy… up to 30 seconds">Read my policy</button>
   </form>
 </dialog>
 {% endblock %}

@@ -77,7 +77,27 @@
 <script src="/static/js/app.js?v={{ asset_version('app/static/js/app.js') }}" defer></script>
 <script>
   // HTMX swaps in new HTML: let the design's scroll-reveal pick up the new blocks.
-  document.addEventListener('htmx:afterSwap', function (e) { if (window.PP) window.PP.observe(e.detail.target); });
+  document.addEventListener('htmx:afterSwap', function (e) {
+    if (window.PP) window.PP.observe(e.detail.target);
+    var first = e.detail.target.firstElementChild;  // on a phone the answer may land below the screen
+    if (first && e.detail.target.matches('.answer-slot, #sit-result')) first.scrollIntoView({behavior: 'smooth', block: 'start'});
+  });
+  // Busy state: a spinner + label on the submit button while the server works (htmx and plain forms).
+  function busy(btn, on) {
+    if (!btn || !btn.hasAttribute('data-busy')) return;
+    if (on) { btn.dataset.label = btn.innerHTML; btn.textContent = btn.getAttribute('data-busy'); btn.classList.add('is-busy'); }
+    else if (btn.dataset.label) { btn.innerHTML = btn.dataset.label; btn.classList.remove('is-busy'); }
+  }
+  document.addEventListener('htmx:beforeRequest', function (e) { busy(e.detail.elt.querySelector && e.detail.elt.querySelector('[data-busy]'), true); });
+  document.addEventListener('htmx:afterRequest', function (e) { busy(e.detail.elt.querySelector && e.detail.elt.querySelector('[data-busy]'), false); });
+  document.addEventListener('submit', function (e) {  // plain (non-htmx) forms, e.g. PDF upload
+    var f = e.target; if (f.hasAttribute('hx-post') || e.defaultPrevented) return;
+    var b = f.querySelector('[data-busy]'); if (!b) return;
+    busy(b, true); setTimeout(function () { b.disabled = true; }, 0);
+  });
+  window.addEventListener('pageshow', function () {  // back button: restore buttons
+    document.querySelectorAll('.is-busy').forEach(function (b) { b.disabled = false; busy(b, false); });
+  });
   document.addEventListener('htmx:responseError', function () { if (window.PP) window.PP.toast('Something went wrong. Please try again.'); });
 </script>
 </body>
