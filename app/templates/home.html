@@ -1,5 +1,11 @@
 {% extends "base.html" %}
 {% block content %}
+  {% if household.is_demo %}
+    <p class="rounded-lg bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-900">
+      <b>Demo family.</b> Names, dates and premiums are made up. Policy texts are public sample documents;
+      the auto policy is a fictional sample. <a href="/start" class="underline">Start my own family</a>
+    </p>
+  {% endif %}
   <a href="/situation"
      class="block w-full rounded-2xl bg-red-600 text-white text-center text-lg font-semibold py-4 shadow">
     Something happened?

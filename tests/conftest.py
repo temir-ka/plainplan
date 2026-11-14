@@ -7,6 +7,7 @@ TEST_DB = pathlib.Path("test.db")
 TEST_DB.unlink(missing_ok=True)
 os.environ["DATABASE_URL"] = f"sqlite:///{TEST_DB}"
 os.environ["ANTHROPIC_API_KEY"] = "test-key-not-real"  # load_dotenv() won't override it with the real one
+os.environ["DEMO_FILE"] = ""  # demo family off by default; test_demo.py turns it on
 
 import pytest  # noqa: E402
 

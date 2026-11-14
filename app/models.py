@@ -43,6 +43,7 @@ class Policy(SQLModel, table=True):
     period_end: date | None = None
     premium_monthly: float | None = None
     premium_due_day: int | None = None
+    demo_values: bool = False  # insurer/phone/dates/premium typed from demo_family.json -> "Demo · entered by user"
     created_at: datetime = F(default_factory=_now)
 
 
@@ -68,3 +69,11 @@ class Field(SQLModel, table=True):
     quote: str = ""  # verbatim text from the chunk
     verified: bool = False
     source: str = "extracted"  # "extracted" | "user" | "demo"
+
+
+class DocCache(SQLModel, table=True):
+    """Parsed chunks + raw LLM extraction per (file SHA-256, policy type). Same PDF -> no second LLM call.
+    Holds only masked text and model output, never the file. Fields are still re-verified on every use."""
+    key: str = F(primary_key=True)  # "<sha256>:<type>"
+    chunks_json: str  # [{"page", "section", "text"}, ...]
+    extraction_json: str  # llm.Extraction as JSON; chunk_id = index into chunks_json

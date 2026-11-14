@@ -6,9 +6,20 @@
     <h1 class="mt-2 text-2xl font-semibold">{{ ICONS[policy.type] }} {{ policy.insurer or policy.type.capitalize() }}</h1>
     <p class="text-sm text-slate-500">{{ policy.type.capitalize() }} · covers {{ covered }} · {{ pages }} pages read</p>
     {% if policy.policy_number_last4 %}<p class="text-sm">Policy ••••{{ policy.policy_number_last4 }}</p>{% endif %}
+    {% if policy.period_end or policy.premium_monthly %}
+      <p class="text-sm">
+        {% if policy.period_start and policy.period_end %}
+          {{ policy.period_start.strftime("%b %-d, %Y") }} – {{ policy.period_end.strftime("%b %-d, %Y") }}{% endif %}
+        {% if policy.premium_monthly %} · ${{ "%.0f"|format(policy.premium_monthly) }}/month{% endif %}
+      </p>
+    {% endif %}
     {% if policy.claims_phone %}
       <a href="tel:{{ policy.claims_phone }}" class="mt-2 inline-block rounded-lg bg-emerald-600 text-white px-3 py-1.5 text-sm">
         Call claims: {{ policy.claims_phone }}</a>
+    {% endif %}
+    {% if policy.demo_values %}
+      <p class="mt-1 text-xs text-amber-700">Demo · entered by user: insurer name, phone, dates and premium
+        when they are not in the document.</p>
     {% endif %}
   </div>
 

@@ -4,7 +4,7 @@ from sqlmodel import Session, select
 
 from app.db import engine
 from app.models import Chunk, Field, Household, Policy
-from app.routes.policies import store_fields
+from app.services.ingest import store_fields
 from app.services.citations import appears_in, verify_field
 from app.services.llm import KEY_FIELDS, ExtractedField, Extraction
 

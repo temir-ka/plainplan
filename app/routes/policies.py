@@ -14,9 +14,8 @@ from sqlmodel import Session, select
 
 from app.models import Chunk, Field, Member, Policy, PolicyMember
 from app.routes.pages import POLICY_TYPES, SessionDep, covers, render
-from app.services import llm
-from app.services.citations import appears_in, verify_field
-from app.services.pdf import ScannedPdfError, read_policy_pdf
+from app.services.ingest import read_and_extract, save_document
+from app.services.pdf import ScannedPdfError
 
 router = APIRouter()
 
@@ -63,7 +62,7 @@ def add_policy(
     try:
         if path.read_bytes()[:5] != b"%PDF-":
             return RedirectResponse(_back_url(member_ids, "notpdf"), status_code=303)
-        chunks = read_policy_pdf(path)
+        chunks, extraction = read_and_extract(session, path, type)
     except ScannedPdfError:
         return RedirectResponse(_back_url(member_ids, "scan"), status_code=303)
     except Exception:  # broken or encrypted PDF
@@ -75,37 +74,8 @@ def add_policy(
     session.add(policy)
     session.flush()
     session.add_all(PolicyMember(policy_id=policy.id, member_id=m) for m in member_ids)
-    rows = [Chunk(policy_id=policy.id, page=c.page, section=c.section, text=c.text) for c in chunks]
-    session.add_all(rows)
-    session.commit()
-    store_fields(session, policy, rows, llm.extract_fields(policy.type, rows))
+    save_document(session, policy, chunks, extraction)
     return RedirectResponse(f"/policy/{policy.id}", status_code=303)
-
-
-def store_fields(session: Session, policy: Policy, chunks: list[Chunk],
-                 extraction: llm.Extraction | None) -> None:
-    """Keep only what our code can verify. Every key field gets a row; unverified ones stay empty
-    and the page shows "Not found — enter manually"."""
-    by_id = {c.id: c.text for c in chunks}
-    texts = list(by_id.values())
-    found: dict[str, llm.ExtractedField] = {}
-    for f in extraction.fields if extraction else []:
-        if f.name in found or f.name not in llm.KEY_FIELDS[policy.type]:
-            continue
-        if f.chunk_id in by_id and verify_field(f.value, f.quote, by_id[f.chunk_id]):
-            found[f.name] = f
-
-    for name in llm.KEY_FIELDS[policy.type]:
-        f = found.get(name)
-        session.add(Field(policy_id=policy.id, name=name, value=f.value if f else "",
-                          chunk_id=f.chunk_id if f else None, quote=f.quote if f else "", verified=bool(f)))
-    if extraction:
-        policy.insurer = extraction.insurer if appears_in(extraction.insurer, texts) else ""
-        policy.claims_phone = extraction.claims_phone if appears_in(extraction.claims_phone, texts) else ""
-        last4 = extraction.policy_number_last4
-        policy.policy_number_last4 = last4 if len(last4) == 4 and appears_in("••••" + last4, texts) else ""
-        session.add(policy)
-    session.commit()
 
 
 def own_policy(session: Session, hh_id: str, policy_id: int) -> Policy:
