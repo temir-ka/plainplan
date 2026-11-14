@@ -15,11 +15,11 @@
   <h2 class="hd sec-title sec-title--sm">In your family</h2>
   <ul class="plain members">
     {% for m in members %}
-    <li class="glass member-row">{{ avatar(m) }}<span><b class="hd">{{ m.nickname }}</b><small class="muted">{{ m.role.capitalize() }}</small></span>
+    <li class="glass member-row">{{ avatar(m) }}<span class="member-row__name"><b class="hd">{{ m.nickname }}</b><small class="muted">{{ m.role.capitalize() }}</small></span>
       {% if m.id not in with_policies %}
         <button class="linkbtn" type="button" hx-delete="/members/{{ m.id }}" hx-target="#members" hx-swap="outerHTML">Remove</button>
       {% endif %}</li>
     {% endfor %}
-    <li class="glass member-row member-row--shared"><span class="ico-chip">{{ icon('home', 20) }}</span><span><b class="hd">Shared</b><small class="muted">Always there, for house, car and anything owned together</small></span></li>
+    <li class="glass member-row member-row--shared"><span class="ico-chip">{{ icon('home', 20) }}</span><span class="member-row__name"><b class="hd">Shared</b><small class="muted">Always there, for house, car and anything owned together</small></span></li>
   </ul>
 </section>
