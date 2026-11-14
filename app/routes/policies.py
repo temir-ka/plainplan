@@ -5,6 +5,7 @@ The uploaded file lives only in a temp file while we extract text, then it is de
 
 import os
 import tempfile
+from datetime import date
 from pathlib import Path
 from typing import Annotated
 
@@ -87,6 +88,10 @@ def own_policy(session: Session, hh_id: str, policy_id: int) -> Policy:
 
 @router.get("/policy/{policy_id}", response_class=HTMLResponse)
 def policy_page(policy_id: int, request: Request, session: SessionDep):
+    return _render_policy(policy_id, request, session)
+
+
+def _render_policy(policy_id: int, request: Request, session: Session, details_error: str = "") -> HTMLResponse:
     hh_id = request.state.household.id
     policy = own_policy(session, hh_id, policy_id)
     member_ids = covers(session, hh_id).get(policy.id, set())
@@ -102,4 +107,82 @@ def policy_page(policy_id: int, request: Request, session: SessionDep):
         fields=fields,
         ask_label="Ask about this policy",
         ask_scope=f"policy:{policy.id}",
+        details_error=details_error,
     )
+
+
+def _own_field(session: Session, hh_id: str, field_id: int) -> Field:
+    field = session.get(Field, field_id)
+    if not field:
+        raise HTTPException(404)
+    own_policy(session, hh_id, field.policy_id)  # 404 if it belongs to another family
+    return field
+
+
+def _field_partial(request: Request, session: Session, field: Field) -> HTMLResponse:
+    chunk = session.get(Chunk, field.chunk_id) if field.chunk_id else None
+    return render(request, "partials/field.html", f=field, page=chunk.page if chunk else None)
+
+
+@router.get("/fields/{field_id}", response_class=HTMLResponse)
+def show_field(field_id: int, request: Request, session: SessionDep):
+    return _field_partial(request, session, _own_field(session, request.state.household.id, field_id))
+
+
+@router.get("/fields/{field_id}/edit", response_class=HTMLResponse)
+def edit_field_form(field_id: int, request: Request, session: SessionDep):
+    return render(request, "partials/field_edit.html", f=_own_field(session, request.state.household.id, field_id))
+
+
+@router.post("/fields/{field_id}", response_class=HTMLResponse)
+def save_field(field_id: int, request: Request, session: SessionDep, value: Annotated[str, Form()] = ""):
+    """A typed value is the user's, not the document's: no quote, not verified."""
+    field = _own_field(session, request.state.household.id, field_id)
+    field.value, field.source, field.verified, field.quote, field.chunk_id = value.strip()[:120], "user", False, "", None
+    session.add(field)
+    session.commit()
+    return _field_partial(request, session, field)
+
+
+class DetailsError(ValueError):
+    """A message we can show the user as is."""
+
+
+def _parse_details(form: dict) -> dict:
+    """Raises DetailsError (our message) or ValueError (unparseable date/number)."""
+    out: dict = {"insurer": form["insurer"].strip()[:60], "claims_phone": form["claims_phone"].strip()[:30]}
+    for key in ("period_start", "period_end"):
+        out[key] = date.fromisoformat(form[key]) if form[key] else None
+    if out["period_start"] and out["period_end"] and out["period_end"] < out["period_start"]:
+        raise DetailsError("The end date is before the start date.")
+    out["premium_monthly"] = float(form["premium_monthly"]) if form["premium_monthly"] else None
+    if out["premium_monthly"] is not None and not 0 <= out["premium_monthly"] <= 100_000:
+        raise DetailsError("The premium looks wrong.")
+    out["premium_due_day"] = int(form["premium_due_day"]) if form["premium_due_day"] else None
+    if out["premium_due_day"] is not None and not 1 <= out["premium_due_day"] <= 31:
+        raise DetailsError("The due day must be between 1 and 31.")
+    return out
+
+
+@router.post("/policy/{policy_id}/details")
+def save_details(
+    policy_id: int, request: Request, session: SessionDep,
+    insurer: Annotated[str, Form()] = "", claims_phone: Annotated[str, Form()] = "",
+    period_start: Annotated[str, Form()] = "", period_end: Annotated[str, Form()] = "",
+    premium_monthly: Annotated[str, Form()] = "", premium_due_day: Annotated[str, Form()] = "",
+):
+    policy = own_policy(session, request.state.household.id, policy_id)
+    form = {"insurer": insurer, "claims_phone": claims_phone, "period_start": period_start,
+            "period_end": period_end, "premium_monthly": premium_monthly, "premium_due_day": premium_due_day}
+    try:
+        details = _parse_details(form)
+    except DetailsError as e:
+        return _render_policy(policy_id, request, session, details_error=str(e))
+    except ValueError:
+        return _render_policy(policy_id, request, session, details_error="Check the dates and numbers.")
+    for key, value in details.items():
+        setattr(policy, key, value)
+    policy.details_edited = True
+    session.add(policy)
+    session.commit()
+    return RedirectResponse(f"/policy/{policy.id}", status_code=303)

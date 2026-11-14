@@ -1,0 +1,20 @@
+{# One key field row; HTMX swaps it with field_edit.html and back. needs: f, page #}
+<div id="field-{{ f.id }}" class="text-sm border-t border-slate-100 pt-2 first:border-0 first:pt-0">
+  <div class="flex justify-between gap-3">
+    <span class="text-slate-600">{{ f.name.replace("_", " ").capitalize() }}</span>
+    <span class="text-right">
+      {% if f.value %}<span class="font-medium">{{ f.value }}</span>
+      {% else %}<span class="text-slate-400">Not found — enter manually</span>{% endif %}
+      <button hx-get="/fields/{{ f.id }}/edit" hx-target="#field-{{ f.id }}" hx-swap="outerHTML"
+              class="ml-1 text-xs text-slate-500 underline">Edit</button>
+    </span>
+  </div>
+  {% if f.verified %}
+    <details class="mt-1">
+      <summary class="cursor-pointer text-xs text-emerald-700">✓ verified · p. {{ page or "?" }}</summary>
+      <blockquote class="mt-1 border-l-2 border-emerald-300 pl-2 text-xs text-slate-600">“{{ f.quote }}”</blockquote>
+    </details>
+  {% elif f.source == "user" %}
+    <span class="text-xs text-slate-500">Entered by you</span>
+  {% endif %}
+</div>

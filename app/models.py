@@ -44,6 +44,7 @@ class Policy(SQLModel, table=True):
     premium_monthly: float | None = None
     premium_due_day: int | None = None
     demo_values: bool = False  # insurer/phone/dates/premium typed from demo_family.json -> "Demo · entered by user"
+    details_edited: bool = False  # the guest typed some of these details -> "entered by you"
     created_at: datetime = F(default_factory=_now)
 
 
