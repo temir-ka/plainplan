@@ -62,6 +62,17 @@ def numbers_in(text: str) -> set[str]:
     return result
 
 
+def verify_field(value: str, quote: str, chunk_text: str) -> bool:
+    """A key field is verified when its quote is in the chunk and every number in the value is in the quote."""
+    return quote_in_chunk(quote, chunk_text) and numbers_in(value) <= numbers_in(quote)
+
+
+def appears_in(snippet: str, texts: list[str]) -> bool:
+    """For insurer name / claims phone: must literally appear somewhere in the document."""
+    needle = normalize(snippet)
+    return bool(needle) and any(needle in normalize(t) for t in texts)
+
+
 def verify(answer: str, citations: list[Citation], chunk_texts: dict[int, str]) -> Verification:
     verified = [
         c for c in citations

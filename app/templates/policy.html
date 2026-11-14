@@ -15,10 +15,23 @@
   <section class="rounded-xl bg-white border border-slate-200 p-4 space-y-2">
     <h2 class="font-semibold">Key fields</h2>
     {% for f in fields %}
-      <div class="flex justify-between gap-3 text-sm">
-        <span class="text-slate-600">{{ f.name.replace("_", " ").capitalize() }}</span>
-        <span class="text-right">{{ f.value }}
-          {% if f.verified %}<span class="text-emerald-700">✓ verified</span>{% endif %}</span>
+      <div class="text-sm border-t border-slate-100 pt-2 first:border-0 first:pt-0">
+        <div class="flex justify-between gap-3">
+          <span class="text-slate-600">{{ f.name.replace("_", " ").capitalize() }}</span>
+          {% if f.value %}
+            <span class="text-right font-medium">{{ f.value }}</span>
+          {% else %}
+            <span class="text-right text-slate-400">Not found — enter manually</span>
+          {% endif %}
+        </div>
+        {% if f.verified %}
+          <details class="mt-1">
+            <summary class="cursor-pointer text-xs text-emerald-700">✓ verified · p. {{ chunk_pages.get(f.chunk_id, "?") }}</summary>
+            <blockquote class="mt-1 border-l-2 border-emerald-300 pl-2 text-xs text-slate-600">“{{ f.quote }}”</blockquote>
+          </details>
+        {% elif f.source == "user" %}
+          <span class="text-xs text-slate-500">Entered by you</span>
+        {% endif %}
       </div>
     {% else %}
       <p class="text-sm text-slate-500">Key fields will appear here after the AI reads the document.</p>

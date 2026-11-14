@@ -43,7 +43,9 @@
       {% endif %}
       <p class="text-xs text-slate-500">We read your PDF once, keep the text to quote it, and delete the file.
         Text is processed by an AI provider. Don't upload ID cards.</p>
-      <button class="w-full rounded-lg bg-slate-900 text-white py-2">Upload</button>
+      <button class="w-full rounded-lg bg-slate-900 text-white py-2"
+              onclick="if (this.form.checkValidity()) { this.textContent = 'Reading your policy… (up to a minute)'; }">
+        Upload</button>
     </form>
   </section>
 
