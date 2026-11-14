@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, bot %}
+{% block title %}Pricing: Plainplan{% endblock %}
+{% block content %}
+<div class="container stack page-top">
+  <a class="back" href="/">{{ icon('back', 18) }}Family</a>
+  <header class="sit__head">{{ bot(84) }}<div><h1 class="hd">Simple pricing for the whole family</h1>
+    <p class="muted">One plan covers every person and every policy in your household.</p></div></header>
+
+  <p class="note note--ok" role="note">During the pilot everything is free. No card needed.</p>
+
+  <div class="pgrid">
+    <section class="pay__card glass" aria-labelledby="free-t">
+      <div class="pay__row"><div><b class="hd" id="free-t">Free</b><span class="muted small">To try it on your own documents</span></div></div>
+      <div class="pay__price hd">$0</div>
+      <ul class="ticks">
+        <li>{{ icon('check', 14, 3.5) }}The demo family, with real public sample policies</li>
+        <li>{{ icon('check', 14, 3.5) }}Your own family with up to 2 policies</li>
+        <li>{{ icon('check', 14, 3.5) }}3 questions or "Something happened?" checks</li>
+        <li>{{ icon('check', 14, 3.5) }}Every answer backed by a quote our code verified</li>
+        <li>{{ icon('check', 14, 3.5) }}Next 90 days and calendar export (.ics)</li>
+      </ul>
+      <a class="btn btn--ghost btn--block" href="/start">Start my own family</a>
+    </section>
+
+    <section class="pay__card glass glass--violet" aria-labelledby="fam-t">
+      <div class="pay__row"><div><b class="hd" id="fam-t">Plainplan Family</b><span class="muted small">For the whole household</span></div>
+        <span class="badge">AFTER THE PILOT</span></div>
+      <div class="pay__price hd">$59<span>/ year</span></div>
+      <ul class="ticks">
+        <li>{{ icon('check', 14, 3.5) }}Unlimited policies for every family member</li>
+        <li>{{ icon('check', 14, 3.5) }}Unlimited questions and "Something happened?" checks</li>
+        <li>{{ icon('check', 14, 3.5) }}Health, dental, auto and home in one place</li>
+        <li>{{ icon('check', 14, 3.5) }}Every answer backed by a quote our code verified</li>
+        <li>{{ icon('check', 14, 3.5) }}Renewal, premium and deadline calendar</li>
+      </ul>
+      <p class="muted small">About the cost of one hour on the phone with an insurer, once a year.</p>
+    </section>
+  </div>
+
+  <p class="muted small">Plainplan does not sell insurance and earns nothing from insurers. You pay for the tool, so it works for you.</p>
+</div>
+{% endblock %}

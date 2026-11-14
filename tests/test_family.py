@@ -118,3 +118,10 @@ def test_delete_data_removes_everything():
             assert s.query(Policy).filter(Policy.household_id == hh_id).count() == 0
             assert s.query(PolicyMember).filter(PolicyMember.member_id == mom_id).count() == 0
         assert client.cookies.get("hh_id") != hh_id
+
+
+def test_pricing_page_is_honest_about_the_pilot():
+    with new_client() as client:
+        html = client.get("/pricing").text
+    assert "$59" in html and "During the pilot everything is free" in html
+    assert "checkout" not in html.lower() and "4242" not in html  # no payment flow is promised

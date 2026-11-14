@@ -231,3 +231,8 @@ def delete_data(request: Request, session: SessionDep):
     response = RedirectResponse("/", status_code=303)
     response.delete_cookie(config.COOKIE_NAME)
     return response
+
+
+@router.get("/pricing", response_class=HTMLResponse)
+def pricing_page(request: Request):
+    return render(request, "pricing.html")
