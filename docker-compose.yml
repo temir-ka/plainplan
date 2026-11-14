@@ -3,12 +3,15 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8000:8000"
-    env_file: .env            # lives only on the server, never in git
+      - "${PUBLIC_PORT:-8000}:8000"   # change PUBLIC_PORT in .env if 8000 is taken on the server
+    env_file: .env                    # lives only on the server, never in git
     environment:
       DATABASE_URL: sqlite:////data/plainplan.db
     volumes:
-      - plainplan-data:/data  # survives rebuilds and restarts
+      - plainplan-data:/data          # survives rebuilds and restarts
+    mem_limit: 450m                   # 1 GB server: if we misbehave, only this container is killed
+    logging:
+      options: {max-size: "10m", max-file: "3"}
 
 volumes:
   plainplan-data:

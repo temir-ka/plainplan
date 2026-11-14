@@ -81,7 +81,7 @@ def warm_cache() -> None:
         with Session(engine) as session:
             read_and_extract(session, _pdf(entry), entry["type"])
 
-    with ThreadPoolExecutor(max_workers=6) as pool:
+    with ThreadPoolExecutor(max_workers=2) as pool:  # 2 at a time: keeps memory low on a 1 GB server
         for entry, result in zip(data["policies"], pool.map(lambda e: _safe(one, e), data["policies"])):
             log.info("demo cache %s: %s", entry["file"], result)
 

@@ -2,14 +2,14 @@
 
 Family insurance helper for US parents (30-45) whose family has 4-8 policies (health, dental, auto, home/renters).
 Pain: nobody reads their policies; when something happens they don't know which policy applies, what to do, by when, and whom to call.
-Web only (PWA ok), no login. All product copy is in English. Screens and UX (source of truth): docs/screens.md. Feature details: docs/functionality.md. Copy: docs/copy.md. Design: docs/design/*.png.
+Web only (PWA ok), no login. All product copy is in English. Screens and UX (source of truth): docs/screens.md. Feature details: docs/functionality.md. Design: app/static/css/app.css (ported from the team prototype).
 
 ## Stack
-- One FastAPI app serves everything: Jinja2 templates + HTMX + Tailwind (CDN). No React, no separate frontend, no CORS.
-- SQLModel; DATABASE_URL from env (sqlite in a Docker volume in prod, sqlite:///local.db locally; Postgres works by changing the URL).
-- pdfplumber (page-level chunks), rank_bm25, anthropic SDK, stripe (test mode). .ics written by hand.
+- One FastAPI app serves everything: Jinja2 templates + HTMX (CDN) + our own app.css/app.js. No React, no separate frontend, no CORS.
+- SQLModel; DATABASE_URL from env (sqlite in a Docker volume in prod, sqlite:///local.db locally).
+- pdfplumber (page-level chunks), rank_bm25, anthropic SDK. No payments (pricing page only). .ics written by hand.
 - Deploy: own server, `docker compose up -d --build` (Dockerfile + docker-compose.yml), DB file in volume /data.
-  HTTPS (Caddy + sslip.io) is added last. render.yaml is a fallback. Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+  HTTPS (Caddy + sslip.io) is added last. Start: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 ## Repo layout
 app/main.py, app/config.py, app/db.py, app/models.py

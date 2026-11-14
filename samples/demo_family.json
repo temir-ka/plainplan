@@ -1,30 +1,100 @@
 {
   "household": "The Parkers",
-  "note": "Names, insurers not named in the documents, dates, premiums and 555-01xx phones are made up and shown as 'Demo · entered by user'. Policy texts are public sample documents (see SOURCES.md).",
+  "note": "Names, insurer names, dates, premiums and 555-01xx phones are made up and shown as 'Demo \u00b7 entered by user'. Policy texts are real public documents (see SOURCES.md).",
   "members": [
-    {"nickname": "Mom", "role": "parent"},
-    {"nickname": "Dad", "role": "parent"},
-    {"nickname": "Leo", "role": "child"},
-    {"nickname": "Ava", "role": "child"}
+    {
+      "nickname": "Mom",
+      "role": "parent"
+    },
+    {
+      "nickname": "Dad",
+      "role": "parent"
+    },
+    {
+      "nickname": "Leo",
+      "role": "child"
+    },
+    {
+      "nickname": "Ava",
+      "role": "child"
+    }
   ],
   "policies": [
-    {"file": "sbc-completed-sample.pdf", "type": "health", "insurer": "Sample Health Co.",
-     "covers": ["Dad", "Leo", "Ava"], "period_start": "2026-01-01", "period_end": "2026-12-31",
-     "premium_monthly": 410, "premium_due_day": 1, "claims_phone": "1-800-555-0100"},
-    {"file": "SBC Sample Completed 4 4 clean MM 508.pdf", "type": "health", "insurer": "Sample Employer Health Plan",
-     "covers": ["Mom"], "period_start": "2026-01-01", "period_end": "2026-12-31",
-     "premium_monthly": 180, "premium_due_day": 15, "claims_phone": "1-800-555-0101"},
-    {"file": "2025_Delta_Dental_Plan_Chart_Standard.pdf", "type": "dental",
-     "covers": ["Leo", "Ava"], "period_start": "2026-01-01", "period_end": "2026-12-31",
-     "premium_monthly": 38, "premium_due_day": 1},
-    {"file": "matrix-direct-ppo-basic-py2025.pdf", "type": "dental",
-     "covers": ["Mom", "Dad"], "period_start": "2026-01-01", "period_end": "2026-12-31",
-     "premium_monthly": 42, "premium_due_day": 1, "claims_phone": "1-800-555-0103"},
-    {"file": "Sample_US_Personal_Auto_Policy.pdf", "type": "auto",
-     "covers": [], "period_start": "2026-07-15", "period_end": "2027-01-15",
-     "premium_monthly": 222, "premium_due_day": 15},
-    {"file": "homeowners-3-special-form.pdf", "type": "home", "insurer": "Sample Home Insurance Co.",
-     "covers": [], "period_start": "2026-03-01", "period_end": "2027-03-01",
-     "premium_monthly": 145, "premium_due_day": 1, "claims_phone": "1-800-555-0102"}
+    {
+      "file": "cms_sample_sbc_2025.pdf",
+      "type": "health",
+      "insurer": "Sample Health Co.",
+      "covers": [
+        "Dad",
+        "Leo",
+        "Ava"
+      ],
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "premium_monthly": 410,
+      "premium_due_day": 1,
+      "claims_phone": "1-800-555-0100"
+    },
+    {
+      "file": "pinellas_county_ppo_sbc_2025.pdf",
+      "type": "health",
+      "insurer": "Sample Employer Health Plan",
+      "covers": [
+        "Mom"
+      ],
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "premium_monthly": 180,
+      "premium_due_day": 15,
+      "claims_phone": "1-800-555-0101"
+    },
+    {
+      "file": "2025_Delta_Dental_Plan_Chart_Standard.pdf",
+      "type": "dental",
+      "covers": [
+        "Leo",
+        "Ava"
+      ],
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "premium_monthly": 38,
+      "premium_due_day": 1,
+      "claims_phone": "1-800-555-0104"
+    },
+    {
+      "file": "matrix-direct-ppo-basic-py2025.pdf",
+      "type": "dental",
+      "covers": [
+        "Mom",
+        "Dad"
+      ],
+      "period_start": "2026-01-01",
+      "period_end": "2026-12-31",
+      "premium_monthly": 42,
+      "premium_due_day": 1,
+      "claims_phone": "1-800-555-0103"
+    },
+    {
+      "file": "aaa_alabama_personal_auto_policy_sample.pdf",
+      "type": "auto",
+      "covers": [],
+      "period_start": "2026-07-15",
+      "period_end": "2027-01-15",
+      "premium_monthly": 222,
+      "premium_due_day": 15,
+      "insurer": "Sample Auto Insurance Co.",
+      "claims_phone": "1-800-555-0105"
+    },
+    {
+      "file": "homeowners-3-special-form.pdf",
+      "type": "home",
+      "insurer": "Sample Home Insurance Co.",
+      "covers": [],
+      "period_start": "2026-03-01",
+      "period_end": "2027-03-01",
+      "premium_monthly": 145,
+      "premium_due_day": 1,
+      "claims_phone": "1-800-555-0102"
+    }
   ]
 }

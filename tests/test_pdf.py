@@ -7,9 +7,9 @@ from app.services.pdf import (
 )
 
 SAMPLES = Path("samples")
-AUTO = SAMPLES / "Sample_US_Personal_Auto_Policy.pdf"
+AUTO = Path("tests/fixtures/fictional_auto_policy.pdf")
 HOME = SAMPLES / "homeowners-3-special-form.pdf"
-HEALTH = SAMPLES / "sbc-completed-sample.pdf"
+HEALTH = SAMPLES / "cms_sample_sbc_2025.pdf"
 
 
 def test_mask_vin_policy_and_license_numbers():
@@ -61,9 +61,9 @@ def test_real_home_policy_keeps_the_60_day_deadline():
 
 
 @pytest.mark.skipif(not HEALTH.exists(), reason="sample PDF not present")
-def test_real_health_sbc_has_out_of_pocket_limit():
+def test_real_health_sbc_has_its_deductible():
     chunks = read_policy_pdf(HEALTH)
-    assert any("$2,500" in c.text for c in chunks)
+    assert any("overall deductible" in c.text.lower() and "$500" in c.text for c in chunks)
 
 
 def test_scanned_pdf_is_refused(tmp_path):
@@ -75,3 +75,15 @@ def test_scanned_pdf_is_refused(tmp_path):
     doc.save(path)
     with pytest.raises(ScannedPdfError):
         read_policy_pdf(path)
+
+
+AAA = SAMPLES / "aaa_alabama_personal_auto_policy_sample.pdf"
+
+
+@pytest.mark.skipif(not AAA.exists(), reason="sample PDF not present")
+def test_sample_watermark_letters_are_dropped():
+    chunks = read_policy_pdf(AAA)
+    text = "\n".join(c.text for c in chunks)
+    assert "household" in text and "houPsehold" not in text
+    duties = [c for c in chunks if "we must be notified promptly" in c.text]
+    assert duties and duties[0].page == 47

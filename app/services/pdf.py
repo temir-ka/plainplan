@@ -70,9 +70,16 @@ def chunk_pages(pages: list[str], max_chars: int = MAX_CHUNK_CHARS) -> list[Page
     return chunks
 
 
+WATERMARK_MIN_SIZE = 40  # pt; body text is ~10, a "SAMPLE"/"COPY" watermark is ~55
+
+
+def _not_watermark(obj: dict) -> bool:
+    return obj.get("object_type") != "char" or obj.get("size", 0) <= WATERMARK_MIN_SIZE
+
+
 def extract_pages(path: Path) -> list[str]:
     with pdfplumber.open(path) as pdf:
-        return [page.extract_text() or "" for page in pdf.pages]
+        return [page.filter(_not_watermark).extract_text() or "" for page in pdf.pages]
 
 
 def read_policy_pdf(path: Path) -> list[PageChunk]:

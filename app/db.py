@@ -7,15 +7,7 @@ from sqlmodel import Session, SQLModel, create_engine
 from app import config
 
 
-def _normalize_url(url: str) -> str:
-    # Neon/Render give "postgres://" or "postgresql://"; SQLAlchemy needs the psycopg (v3) driver name.
-    for prefix in ("postgres://", "postgresql://"):
-        if url.startswith(prefix):
-            return "postgresql+psycopg://" + url[len(prefix):]
-    return url
-
-
-_url = _normalize_url(config.DATABASE_URL)
+_url = config.DATABASE_URL
 _connect_args = {"check_same_thread": False} if _url.startswith("sqlite") else {}
 engine = create_engine(_url, connect_args=_connect_args, pool_pre_ping=True)
 

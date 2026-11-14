@@ -2,7 +2,7 @@
 
 Every policy your family has, in one place. Ask anything, see the exact line that answers it, and never miss a renewal.
 
-One FastAPI app serves HTML pages (Jinja2 + HTMX + Tailwind via CDN). No login: a guest gets an httpOnly cookie `hh_id`
+One FastAPI app serves HTML pages (Jinja2 + HTMX, own CSS/JS). No login: a guest gets an httpOnly cookie `hh_id`
 that points to their household.
 
 ## Run locally
@@ -39,7 +39,7 @@ docker compose up -d --build        # http://<server-ip>:8000
 ```
 
 The SQLite file lives in the Docker volume `plainplan-data`, so it survives rebuilds.
-Update: `git pull && docker compose up -d --build`. `render.yaml` is kept as a fallback.
+Update: `git pull && docker compose up -d --build`.
 All secrets come from environment variables. Never commit `.env`.
 
 Plainplan explains your own policy documents. It is not insurance, legal, or medical advice and does not sell

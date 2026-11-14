@@ -11,7 +11,7 @@ from app.db import engine
 from app.main import app
 from app.models import Chunk, PolicyMember
 
-AUTO = Path("samples/Sample_US_Personal_Auto_Policy.pdf")
+AUTO = Path("tests/fixtures/fictional_auto_policy.pdf")
 needs_sample = pytest.mark.skipif(not AUTO.exists(), reason="sample PDF not present")
 
 
