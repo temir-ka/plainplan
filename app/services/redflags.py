@@ -27,3 +27,13 @@ def find_red_flags(text: str) -> list[str]:
 
 def show_911_banner(text: str, llm_emergency: bool = False) -> bool:
     return llm_emergency or bool(find_red_flags(text))
+
+
+_INJURY = re.compile(
+    r"\b(?:hurts?|hurting|injur\w*|pains?|painful|bleed\w*|blood\w*|broken? (?:bone|arm|leg|neck|back)|"
+    r"sprain\w*|concussion|bruis\w*|cut (?:his|her|their|my)|fell|fall|unconscious|passed out|burn\w*|whiplash)\b",
+    re.IGNORECASE)
+
+
+def mentions_injury(text: str) -> bool:
+    return bool(_INJURY.search(text.replace("’", "'")))

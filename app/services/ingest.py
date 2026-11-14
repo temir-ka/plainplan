@@ -10,6 +10,7 @@ import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
+from sqlalchemy.exc import SQLAlchemyError
 from sqlmodel import Session
 
 from app.models import Chunk, DocCache, Field, Policy
@@ -42,10 +43,19 @@ def read_and_extract(session: Session, pdf_path: Path, policy_type: str) -> tupl
     indexed = [_IndexedChunk(i, c.page, c.section, c.text) for i, c in enumerate(chunks)]
     extraction = llm.extract_fields(policy_type, indexed)
     if extraction is not None:
+        _save_cache(session, key, chunks, extraction)
+    return chunks, extraction
+
+
+def _save_cache(session: Session, key: str, chunks: list[PageChunk], extraction: llm.Extraction) -> None:
+    """Best effort: two requests may extract the same file at once (e.g. startup warm-up + first visitor).
+    Callers must not have unsaved work in `session` when calling read_and_extract."""
+    try:
         session.merge(DocCache(key=key, chunks_json=json.dumps([asdict(c) for c in chunks]),
                                extraction_json=extraction.model_dump_json()))
         session.commit()
-    return chunks, extraction
+    except SQLAlchemyError:
+        session.rollback()  # someone else cached it first, or the DB was busy: same result, nothing lost
 
 
 def save_document(session: Session, policy: Policy, chunks: list[PageChunk],

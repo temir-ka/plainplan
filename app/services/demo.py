@@ -44,6 +44,9 @@ def needs_seed(session: Session, household: Household) -> bool:
 
 def seed(session: Session, household_id: str) -> None:
     data = _load()
+    # Read every document first (may write DocCache and commit), THEN build the family in one go.
+    docs = [(entry, *read_and_extract(session, _pdf(entry), entry["type"])) for entry in data["policies"]]
+
     household = session.get(Household, household_id)
     household.name = data["household"]
     session.add(household)
@@ -55,8 +58,7 @@ def seed(session: Session, household_id: str) -> None:
         members[m["nickname"]] = member
     session.flush()
 
-    for entry in data["policies"]:
-        chunks, extraction = read_and_extract(session, _pdf(entry), entry["type"])
+    for entry, chunks, extraction in docs:
         policy = Policy(
             household_id=household_id, type=entry["type"], demo_values=True,
             insurer=entry.get("insurer", ""), claims_phone=entry.get("claims_phone", ""),

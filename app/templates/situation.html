@@ -1,6 +1,20 @@
 {% extends "base.html" %}
+{% block title %}Something happened? · Plainplan{% endblock %}
 {% block content %}
   <a href="/" class="text-sm underline">&larr; Family</a>
   <h1 class="text-2xl font-semibold">Something happened?</h1>
-  <p class="text-sm text-slate-500">Coming soon: describe what happened and see which policies apply.</p>
+  <p class="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-800">
+    If anyone is hurt or in danger, call 911 first.</p>
+
+  <form hx-post="/situation" hx-target="#result" hx-indicator="#working" hx-disabled-elt="find button"
+        class="space-y-2">
+    <label for="what" class="text-sm font-medium">What happened?</label>
+    <textarea id="what" name="text" required maxlength="500" rows="3"
+              placeholder="e.g. Someone rear-ended our car and Dad's neck hurts"
+              class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"></textarea>
+    <button class="w-full rounded-lg bg-red-600 text-white py-2 font-medium disabled:opacity-50">
+      Show which policies apply</button>
+  </form>
+  <p id="working" class="htmx-indicator text-xs text-slate-500">Checking your family's policies…</p>
+  <div id="result"></div>
 {% endblock %}
