@@ -107,7 +107,8 @@ def situation(request: Request, session: SessionDep, text: Annotated[str, Form()
     who = chosen or (min(named) if len(named) == 1 else None) or (by_llm[0] if by_llm else None)
 
     policies = list(session.exec(select(Policy).where(Policy.household_id == hh.id).order_by(Policy.id)))
-    routed = routing.route(situation_type, policies, covers(session, hh.id), someone_hurt=someone_hurt, member_id=who)
+    routed = routing.route(situation_type, policies, covers(session, hh.id), someone_hurt=someone_hurt, member_id=who,
+                           text=text)
 
     context = {"text": text, "banner": banner, "title": SITUATION_TITLES[situation_type],
                "checklist": routing.CHECKLISTS[situation_type], "who": nicknames.get(who, "")}

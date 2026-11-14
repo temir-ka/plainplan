@@ -85,14 +85,20 @@ def ask(request: Request, session: SessionDep, q: Annotated[str, Form()] = "",
     if not found:
         return _refusal(request, top_policy, "I couldn't find this in your documents.", question)
 
-    result = llm.answer_question(question, found)
+    notes = _policy_notes(session, hh.id, by_policy)
+    texts = {c.id: c.text for c in found}
+    result = llm.answer_question(question, found, notes)
     _count_question(session, hh.id)
     if result is None:
         return _refusal(request, top_policy, "I couldn't check your documents right now.", question)
 
+    check = _verify(result, texts)
+    if result.status != "unclear" and not check.ok:  # one retry, telling the LLM exactly what failed
+        retry = llm.answer_question(question, found, notes, feedback=_why_rejected(result, check))
+        if retry is not None:
+            result, check = retry, _verify(retry, texts)
+
     chunk_by_id = {c.id: c for c in found}
-    check = verify(result.answer, [Citation(c.chunk_id, c.quote) for c in result.citations],
-                   {c.id: c.text for c in found})
     if result.status == "unclear" or not check.ok:
         return _refusal(request, top_policy, "I couldn't find this in your documents.", question)
 
@@ -100,6 +106,29 @@ def ask(request: Request, session: SessionDep, q: Annotated[str, Form()] = "",
                          chunk_by_id[c.chunk_id].page, c.quote) for c in check.verified]
     return render(request, "partials/answer.html", status=result.status, label=STATUS_LABELS[result.status],
                   answer=result.answer, quotes=quotes, refusal="", policy=top_policy, question=question)
+
+
+def _verify(result: llm.Answer, texts: dict[int, str]):
+    return verify(result.answer, [Citation(c.chunk_id, c.quote) for c in result.citations], texts)
+
+
+def _why_rejected(result: llm.Answer, check) -> str:
+    bad = len(result.citations) - len(check.verified)
+    parts = [f"{bad} quote(s) were not found word for word in their chunk"] if bad else []
+    if check.missing_numbers:
+        parts.append("these numbers are not in any verified quote: " + ", ".join(check.missing_numbers))
+    return "; ".join(parts or ["no verified quote"]) + ". Answer again: drop those numbers or quote the exact text that has them."
+
+
+def _policy_notes(session: Session, hh_id: str, by_policy: dict[int, Policy]) -> dict[int, str]:
+    """Tell the LLM whom each policy covers, so "Dad's deductible" finds Dad's plan."""
+    names = {m.id: m.nickname for m in session.exec(select(Member).where(Member.household_id == hh_id))}
+    cov = covers(session, hh_id)
+    notes = {}
+    for pid, p in by_policy.items():
+        who = ", ".join(names[m] for m in sorted(cov.get(pid, ())) if m in names)
+        notes[pid] = f"{p.type} plan; covers {who}" if who else f"{p.type} policy; shared by the household"
+    return notes
 
 
 def _count_question(session: Session, hh_id: str) -> None:

@@ -60,9 +60,21 @@ def test_member_without_dental_gets_only_health():
 
 def test_water_damage_and_theft():
     assert ids(route("water_damage", FAMILY, COVERS)) == [11]
-    assert ids(route("theft", FAMILY, COVERS)) == [11, 10]
+    assert ids(route("theft", FAMILY, COVERS, text="our car was stolen")) == [11, 10]
 
 
 def test_unknown_or_other_situation_routes_nowhere():
     assert ids(route("other", FAMILY, COVERS)) == []
     assert ids(route("alien_abduction", FAMILY, COVERS)) == []
+
+
+def test_theft_or_storm_uses_auto_only_when_a_vehicle_is_mentioned():
+    policies = [P(1, "home"), P(2, "auto")]
+    bike = route("theft", policies, {}, text="Someone stole my bike from the garage")
+    car = route("theft", policies, {}, text="Someone broke into our car and took the laptop")
+    hail = route("storm_damage", policies, {}, text="Hail dented the SUV in the driveway")
+    roof = route("storm_damage", policies, {}, text="The storm tore shingles off the roof")
+    assert [p.type for p in bike.policies] == ["home"]
+    assert [p.type for p in car.policies] == ["home", "auto"]
+    assert [p.type for p in hail.policies] == ["home", "auto"]
+    assert [p.type for p in roof.policies] == ["home"]

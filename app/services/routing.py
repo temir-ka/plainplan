@@ -5,6 +5,7 @@ Personal policies (health, dental) apply only if they cover the member who was a
 (`covers` maps policy_id -> member ids, so one family plan can cover several people).
 """
 
+import re
 from dataclasses import dataclass, field
 from typing import Protocol
 
@@ -34,6 +35,10 @@ ROUTES: dict[str, list[str]] = {
 }
 
 PERSONAL_TYPES = {"health", "dental"}
+# For these, the auto policy applies only if a vehicle is mentioned ("bike stolen" -> home only).
+AUTO_IF_VEHICLE = {"theft", "storm_damage"}
+_VEHICLE = re.compile(r"\b(cars?|auto|vehicles?|truck|suv|van|minivan|motorcycle|windshield|windscreen|"
+                      r"driveway|parked|parking|dashboard|tires?)\b", re.I)
 # Situations where a person is always affected, even without an explicit "hurt".
 ALWAYS_PERSONAL = {"dental_problem", "illness", "injury"}
 
@@ -55,8 +60,11 @@ def route(
     covers: dict[int, set[int]],
     someone_hurt: bool = False,
     member_id: int | None = None,
+    text: str = "",
 ) -> RoutingResult:
     types = ROUTES.get(situation, [])
+    if situation in AUTO_IF_VEHICLE and not _VEHICLE.search(text):
+        types = [t for t in types if t != "auto"]
     person_involved = someone_hurt or situation in ALWAYS_PERSONAL
     result = RoutingResult()
 
