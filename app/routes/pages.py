@@ -1,6 +1,7 @@
 """Family pages: home, member, shared, /start, /family (edit members), settings + delete data."""
 
 import uuid
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -19,6 +20,17 @@ templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["ICONS"] = {"health": "🩺", "dental": "🦷", "auto": "🚗", "home": "🏠"}
 templates.env.globals["TYPE_LABEL"] = {"health": "Health", "dental": "Dental", "auto": "Auto", "home": "Home"}
 templates.env.globals["stained"] = stained_glass  # decorative stained-glass SVG background (design)
+
+
+def asset_version(path: str) -> str:
+    """Changes whenever the file changes, so browsers never keep a stale app.css / app.js."""
+    try:
+        return str(int(Path(path).stat().st_mtime))
+    except OSError:
+        return "0"
+
+
+templates.env.globals["asset_version"] = asset_version
 
 SessionDep = Annotated[Session, Depends(get_session)]
 ROLES = ("parent", "child")
